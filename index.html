@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>你好老师</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>你好</title>
     <style>
         * {
             box-sizing: border-box;
@@ -16,15 +16,15 @@
             --bubble-duration: 1s;
         }
         body {
-            min-height: 100vh;
-            padding: 80px 20px;
+            height: 100vh;
+            padding: 40px 20px;
             text-align: center;
             overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #ffffff;
         }
-        /* 固定背景 —— 默认白色 */
         .bg-wrap {
             position: fixed;
             inset: 0;
@@ -33,11 +33,9 @@
             transition: background 0.3s ease;
             overflow: hidden;
         }
-        /* 当背景为黑色时（通过 body 类控制） */
         body.bg-black .bg-wrap {
             background: #000000;
         }
-        /* 泡泡 */
         .bubble {
             position: absolute;
             width: 100%;
@@ -48,35 +46,14 @@
             backface-visibility: hidden;
             transition: transform var(--bubble-duration) ease-in-out;
         }
-        body.lite-mode .bubble:nth-child(n+5) {
-            display: none;
-        }
-        body.lite-mode .bubble {
-            transition-duration: calc(var(--bubble-duration) * 1.5);
-        }
-        .bubble:nth-child(1) {
-            background: radial-gradient(circle, rgba(255, 180, 210, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(2) {
-            background: radial-gradient(circle, rgba(160, 210, 255, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(3) {
-            background: radial-gradient(circle, rgba(210, 180, 255, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(4) {
-            background: radial-gradient(circle, rgba(255, 235, 180, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(5) {
-            background: radial-gradient(circle, rgba(180, 255, 210, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(6) {
-            background: radial-gradient(circle, rgba(255, 120, 180, 0.55), transparent var(--bubble-size));
-        }
-        .bubble:nth-child(7) {
-            background: radial-gradient(circle, rgba(120, 220, 255, 0.55), transparent var(--bubble-size));
-        }
+        .bubble:nth-child(1) { background: radial-gradient(circle, rgba(255, 180, 210, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(2) { background: radial-gradient(circle, rgba(160, 210, 255, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(3) { background: radial-gradient(circle, rgba(210, 180, 255, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(4) { background: radial-gradient(circle, rgba(255, 235, 180, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(5) { background: radial-gradient(circle, rgba(180, 255, 210, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(6) { background: radial-gradient(circle, rgba(255, 120, 180, 0.55), transparent var(--bubble-size)); }
+        .bubble:nth-child(7) { background: radial-gradient(circle, rgba(120, 220, 255, 0.55), transparent var(--bubble-size)); }
 
-        /* 页面容器 */
         .view-page {
             max-width: 440px;
             width: 100%;
@@ -113,10 +90,7 @@
             font-weight: 500;
             letter-spacing: 0.5px;
         }
-        /* 深色背景时标题变白 */
-        body.bg-black .title {
-            color: #ffffff;
-        }
+        body.bg-black .title { color: #ffffff; }
         .col-center {
             display: flex;
             flex-direction: column;
@@ -124,19 +98,20 @@
             gap: 22px;
         }
 
-        /* —— 跳转大按钮 —— */
-        .btn-jump {
-            background: linear-gradient(135deg, #1989fa, #6c5ce7);
+        /* ====== 统一按钮样式（MIUI 蓝色） ====== */
+        .btn-jump,
+        .btn-declare {
+            background: #3B82F6; /* MIUI 风格蓝色 */
             color: #ffffff;
             border: none;
             border-radius: 24px;
-            padding: 28px 32px;
-            font-size: 28px;
+            padding: 24px 32px;
+            font-size: 24px;
             font-weight: 600;
             width: 100%;
             cursor: pointer;
             transition: 0.25s ease;
-            box-shadow: 0 8px 28px rgba(25, 137, 250, 0.35);
+            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.35);
             letter-spacing: 1px;
             display: flex;
             align-items: center;
@@ -144,18 +119,13 @@
             gap: 12px;
             position: relative;
             overflow: hidden;
+            -webkit-touch-callout: none;
+            user-select: none;
         }
-        .btn-jump::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            border-radius: 24px;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.15), transparent 60%);
-            pointer-events: none;
-        }
-        .btn-jump:active {
+        .btn-jump:active,
+        .btn-declare:active {
             transform: scale(0.96);
-            box-shadow: 0 4px 16px rgba(25, 137, 250, 0.25);
+            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
         }
         .btn-jump .arrow {
             display: inline-block;
@@ -165,7 +135,43 @@
             transform: translateX(6px);
         }
 
-        /* —— 设置按钮（右上角） —— */
+        /* 左上角返回箭头 */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 9999;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #111111;
+            font-size: 24px;
+            cursor: pointer;
+            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
+            -webkit-touch-callout: none;
+            user-select: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+        .back-btn.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .back-btn:active { transform: scale(0.92); }
+        body.bg-black .back-btn {
+            background: rgba(255, 255, 255, 0.22);
+            border-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+
         .setting-btn {
             position: fixed;
             top: 20px;
@@ -186,30 +192,45 @@
             align-items: center;
             justify-content: center;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
+            -webkit-touch-callout: none;
+            user-select: none;
         }
-        .setting-btn:active {
-            transform: scale(0.92);
-        }
-        /* 深色背景时设置按钮变亮 */
+        .setting-btn:active { transform: scale(0.92); }
         body.bg-black .setting-btn {
             background: rgba(255, 255, 255, 0.22);
             border-color: rgba(255, 255, 255, 0.18);
             color: #ffffff;
         }
 
-        /* —— 设置面板 —— */
+        /* ========== 设置面板 / 声明面板 通用 ========== */
         .set-card {
-            max-height: 74vh;
+            max-height: 78vh;
             overflow-y: auto;
             text-align: left;
+            position: relative;
+            isolation: isolate;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            -webkit-overflow-scrolling: touch;
         }
-        .set-card .title {
-            text-align: center;
-            margin-bottom: 24px;
+        .set-card::-webkit-scrollbar {
+            display: none;
         }
-        .slider-row {
-            margin: 18px 0;
+        .set-card .title { text-align: center; margin-bottom: 24px; }
+
+        .announce-content {
+            font-size: 15px;
+            line-height: 1.8;
+            color: #111111;
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: color 0.3s ease;
         }
+        body.bg-black .announce-content {
+            color: #ffffff;
+        }
+
+        .slider-row { margin: 18px 0; }
         .slider-row label {
             display: block;
             font-size: 14px;
@@ -218,16 +239,16 @@
             transition: color 0.3s ease;
             font-weight: 450;
         }
-        body.bg-black .slider-row label {
-            color: #ffffff;
-        }
+        body.bg-black .slider-row label { color: #ffffff; }
+
+        /* ====== 滑块（轨道 24px，滑块头 22px） ====== */
         .slider-track {
             position: relative;
             width: 100%;
-            height: 28px;
+            height: 24px;
             border-radius: 999px;
             background: rgba(0, 0, 0, 0.08);
-            overflow: hidden;
+            transition: background 0.3s ease;
         }
         body.bg-black .slider-track {
             background: rgba(255, 255, 255, 0.15);
@@ -242,41 +263,56 @@
             border-radius: 999px;
             pointer-events: none;
             z-index: 1;
+            transition: width 0.05s linear;
         }
         .slider-row input[type="range"] {
             -webkit-appearance: none;
             appearance: none;
-            position: absolute;
-            left: 0;
-            top: 0;
+            position: relative;
+            z-index: 2;
             width: 100%;
-            height: 28px;
-            background: transparent;
+            height: 24px;
+            border-radius: 999px;
             outline: none;
-            z-index: 3;
             cursor: pointer;
+            background: transparent;
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
+            border: none;
         }
         .slider-row input[type="range"]::-webkit-slider-runnable-track {
-            -webkit-appearance: none;
-            width: 100%;
-            height: 28px;
+            height: 24px;
             background: transparent;
+            border-radius: 999px;
+            border: none;
         }
         .slider-row input[type="range"]::-webkit-slider-thumb {
             -webkit-appearance: none;
             appearance: none;
-            width: 28px;
-            height: 28px;
+            width: 22px;
+            height: 22px;
             border-radius: 50%;
             background: #ffffff;
             border: 2px solid #1989fa;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-            margin-top: 0;
+            margin-top: 1px;
             position: relative;
             z-index: 4;
-            transform: translateX(0);
+            box-sizing: border-box;
+        }
+        .slider-row input[type="range"]::-moz-range-thumb {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 2px solid #1989fa;
+            box-sizing: border-box;
+        }
+        .slider-row input[type="range"]::-moz-range-track {
+            height: 24px;
+            background: transparent;
+            border-radius: 999px;
+            border: none;
         }
         .slider-row [data-key] {
             cursor: text;
@@ -286,11 +322,58 @@
             color: inherit;
             font-weight: 500;
         }
-        .bg-switch {
-            margin: 16px 0;
-            display: flex;
-            gap: 12px;
+
+        .music-row { margin: 6px 0 4px; }
+        .btn-toggle {
+            width: 100%;
+            padding: 16px 20px;
+            border-radius: 16px;
+            border: none;
+            font-size: 18px;
+            font-weight: 550;
+            cursor: pointer;
+            transition: 0.25s;
+            background: linear-gradient(135deg, #1989fa, #6c5ce7);
+            color: #ffffff;
+            box-shadow: 0 6px 20px rgba(25, 137, 250, 0.28);
+            letter-spacing: 0.5px;
         }
+        .btn-toggle:active { transform: scale(0.97); }
+        .btn-toggle.off {
+            background: rgba(0, 0, 0, 0.08);
+            color: #666666;
+            box-shadow: none;
+        }
+        body.bg-black .btn-toggle.off {
+            background: rgba(255, 255, 255, 0.12);
+            color: #aaaaaa;
+        }
+
+        .btn-enter {
+            width: 100%;
+            padding: 18px 22px;
+            border-radius: 18px;
+            border: none;
+            font-size: 18px;
+            font-weight: 550;
+            cursor: pointer;
+            background: rgba(0, 0, 0, 0.06);
+            color: #111111;
+            transition: 0.2s;
+            margin: 18px 0 4px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            letter-spacing: 0.5px;
+        }
+        .btn-enter:active { transform: scale(0.97); }
+        body.bg-black .btn-enter {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+        }
+        .btn-enter .chev { font-size: 20px; opacity: 0.6; }
+
+        .bg-switch { margin: 16px 0; display: flex; gap: 12px; }
         .bg-switch button {
             flex: 1;
             padding: 10px;
@@ -301,20 +384,11 @@
             font-weight: 500;
             transition: 0.2s;
         }
-        .bg-switch button:active {
-            transform: scale(0.96);
-        }
-        .btn-black {
-            background: #000000;
-            color: #ffffff;
-        }
-        .btn-white {
-            background: #ffffff;
-            color: #000000;
-        }
-        .reset-btn {
-            margin-top: 20px;
-        }
+        .bg-switch button:active { transform: scale(0.96); }
+        .btn-black { background: #000000; color: #ffffff; }
+        .btn-white { background: #ffffff; color: #000000; }
+
+        .reset-btn { margin-top: 20px; }
         .btn-gray {
             background: rgba(0, 0, 0, 0.08);
             color: #111111;
@@ -327,127 +401,83 @@
             transition: 0.2s;
             font-weight: 450;
         }
-        .btn-gray:active {
-            transform: scale(0.97);
-        }
+        .btn-gray:active { transform: scale(0.97); }
         body.bg-black .btn-gray {
             background: rgba(255, 255, 255, 0.25);
             color: #ffffff;
         }
-        .lite-switch {
-            margin: 12px 0 20px;
-            text-align: center;
-        }
-        .lite-switch button {
-            width: 100%;
-            padding: 12px;
-            border-radius: 14px;
-            border: none;
-            background: rgba(0, 0, 0, 0.06);
-            color: #111;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 450;
-            transition: 0.2s;
-        }
-        .lite-switch button:active {
-            transform: scale(0.97);
-        }
-        body.bg-black .lite-switch button {
-            background: rgba(255, 255, 255, 0.2);
-            color: #fff;
-        }
-
-        .set-card::-webkit-scrollbar {
-            width: 4px;
-        }
-        .set-card::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .set-card::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.15);
-            border-radius: 8px;
-        }
-        body.bg-black .set-card::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .btn-back-home {
-            margin-top: 16px;
-            background: rgba(0, 0, 0, 0.06);
-            color: #111111;
-            border: none;
-            border-radius: 16px;
-            padding: 14px;
-            font-size: 16px;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: 450;
-        }
-        .btn-back-home:active {
-            transform: scale(0.96);
-        }
-        body.bg-black .btn-back-home {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-        }
 
         @media (max-width: 480px) {
-            .card {
-                padding: 30px 20px;
-            }
-            .btn-jump {
-                font-size: 22px;
-                padding: 24px 20px;
-            }
-            .setting-btn {
-                width: 44px;
-                height: 44px;
-                font-size: 18px;
-                top: 14px;
-                right: 14px;
-            }
+            .card { padding: 30px 20px; }
+            .btn-jump, .btn-declare { font-size: 20px; padding: 20px 24px; }
+            .setting-btn, .back-btn { width: 44px; height: 44px; font-size: 18px; top: 14px; }
+            .setting-btn { right: 14px; }
+            .back-btn { left: 14px; }
         }
     </style>
 </head>
 <body>
-    <!-- 背景泡泡 -->
     <div class="bg-wrap">
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
-        <div class="bubble"></div>
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
     </div>
 
-    <!-- 右上角设置按钮 -->
+    <audio id="bgMusic" src="./music.mp3" preload="auto" loop></audio>
+
+    <button class="back-btn" id="backBtn" aria-label="返回">←</button>
     <button class="setting-btn" id="goSetting" aria-label="设置">⚙</button>
 
-    <!-- 主页面：跳转按钮 -->
+    <!-- 首页 -->
     <div class="view-page active" id="page-home">
         <div class="card">
             <div class="title">✨ 欢迎</div>
             <div class="col-center">
+                <!-- 声明按钮（已调换到上方） -->
+                <button class="btn-declare" id="declareBtn">周记</button>
+                <!-- 立即前往按钮（已调换到下方） -->
                 <button class="btn-jump" id="jumpBtn">
                     <span>立即前往</span>
                     <span class="arrow">→</span>
                 </button>
-                <!-- 已删除“body.bg-white · 点击跳转”文字 -->
             </div>
         </div>
     </div>
 
-    <!-- 设置面板 -->
+    <!-- 一级设置菜单 -->
     <div class="view-page" id="page-setting">
         <div class="card set-card">
-            <div class="title">⚙ 参数设置</div>
+            <div class="title">⚙ 设置</div>
 
-            <div class="lite-switch">
-                <button id="liteToggle">⚡ 开启流畅模式 (保留4个高对比泡泡)</button>
+            <div class="music-row">
+                <button id="musicToggle" class="btn-toggle">🎵 音乐：开启</button>
             </div>
+
+            <div class="slider-row">
+                <label>音量 <span id="valMusicVol" data-key="musicVol">100</span>%</label>
+                <div class="slider-track">
+                    <div class="slider-fill" id="fillMusicVol"></div>
+                    <input type="range" min="0" max="100" step="1" id="inpMusicVol" value="100">
+                </div>
+            </div>
+
+            <button class="btn-enter" id="goDisplay">
+                <span>🎨 画面设置</span><span class="chev">›</span>
+            </button>
+
+            <div class="bg-switch">
+                <button id="toggleBg" class="btn-black">切换背景</button>
+            </div>
+
+            <div class="col-center reset-btn">
+                <button class="btn-gray" id="resetDefault">恢复默认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 二级菜单：画面设置 -->
+    <div class="view-page" id="page-display">
+        <div class="card set-card">
+            <div class="title">🎨 画面设置</div>
 
             <div class="slider-row">
                 <label>毛玻璃不透明度 <span id="valBgAlpha" data-key="bgAlpha">0.20</span></label>
@@ -456,23 +486,6 @@
                     <input type="range" min="0" max="1" step="0.001" id="inpBgAlpha" value="0.20">
                 </div>
             </div>
-
-            <div class="slider-row">
-                <label>模糊程度 (0~100px) <span id="valBlur" data-key="blur">38</span></label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillBlur"></div>
-                    <input type="range" min="0" max="100" step="0.1" id="inpBlur" value="38">
-                </div>
-            </div>
-
-            <div class="slider-row">
-                <label>饱和度 <span id="valSat" data-key="saturate">60</span>%</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillSat"></div>
-                    <input type="range" min="0" max="300" step="0.1" id="inpSat" value="60">
-                </div>
-            </div>
-
             <div class="slider-row">
                 <label>阴影透明度 (0.01~1.00) <span id="valShadow" data-key="shadowAlpha">0.06</span></label>
                 <div class="slider-track">
@@ -480,7 +493,6 @@
                     <input type="range" min="0.01" max="1" step="0.001" id="inpShadow" value="0.06">
                 </div>
             </div>
-
             <div class="slider-row">
                 <label>泡泡缩放 scale (0.1~10) 最小: <span id="valScaleMin" data-key="scaleMin">1.0</span> &nbsp; 最大: <span id="valScaleMax" data-key="scaleMax">2.5</span></label>
                 <div class="slider-track">
@@ -492,7 +504,6 @@
                     <input type="range" min="0.1" max="10" step="0.001" id="inpScaleMax" value="2.5">
                 </div>
             </div>
-
             <div class="slider-row">
                 <label>translate 最大范围 (0%~300%) <span id="valTrans" data-key="transRange">30</span>%</label>
                 <div class="slider-track">
@@ -500,7 +511,6 @@
                     <input type="range" min="0" max="300" step="0.1" id="inpTrans" value="30">
                 </div>
             </div>
-
             <div class="slider-row">
                 <label>泡泡大小 (0%~100%) <span id="valBubbleSize" data-key="bubbleSize">50</span>%</label>
                 <div class="slider-track">
@@ -508,7 +518,6 @@
                     <input type="range" min="0" max="100" step="0.1" id="inpBubbleSize" value="50">
                 </div>
             </div>
-
             <div class="slider-row">
                 <label>泡泡运动速度 (0.2~10s) <span id="valBubbleTime" data-key="bubbleSec">1.00</span>s</label>
                 <div class="slider-track">
@@ -516,7 +525,6 @@
                     <input type="range" min="0.2" max="10" step="0.01" id="inpBubbleTime" value="1">
                 </div>
             </div>
-
             <div class="slider-row">
                 <label>页面切换过渡时长 (0~2.5s) <span id="valPageTrans" data-key="pageTransSec">0.30</span>s</label>
                 <div class="slider-track">
@@ -524,114 +532,270 @@
                     <input type="range" min="0" max="2.5" step="0.001" id="inpPageTrans" value="0.3">
                 </div>
             </div>
+        </div>
+    </div>
 
-            <div class="bg-switch">
-                <button id="toggleBg" class="btn-black">切换背景</button>
-            </div>
+    <!-- 二级菜单：声明 -->
+    <div class="view-page" id="page-announce">
+        <div class="card set-card">
+            <div class="title">周记</div>
+            <!-- ================= 声明文字开始 ================= -->
+            <div class="announce-content">    还是没办法适应九年级的生活，主要是压力突然给的太大了，一边抓体育，一边又抓学习这对我的身体还有心灵的伤害有点大了，就说初体育这方面吧，这一天的运动量都赶得上我之前八年级三天的运动量了，各学课难度又加大了，而且作业还那么多，我真的吃不消啊，就当说语文这方面吧，要背诵的东西又这么长，我背完后面忘前面，背完前面忘后面还老是背不下来，虽然说这个背诵确实很重要啊，它在考试中占6分，这6分确实很重要，但是这对我的心灵也是一种考验，如果真要让我权衡利弊的话，我宁愿不拿这6分，主要是真背不出来，还有体育方面，我是真的不行，体育老师又要拿满分标准来对待我们，上完一天学，回到家里，脑子又累，身体又累，睡觉的时候又想到这样的日子，我要过200多天，我都已经绝望了，不是说好的因材施教吗？我是一点都没看到，都拿高标准来看待我，但是我的能力就那么一点。说实话，我都有点不敢上高中了，一想到高中生活可能比这更可怕.............
+                 总之，我会尽我努力适应的
 
-            <div class="col-center reset-btn">
-                <button class="btn-gray" id="resetDefault">恢复默认</button>
-            </div>
 
-            <button class="btn-back-home" id="backHome">← 返回首页</button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+太累了，心已经死了(*_*)</div>
+            <!-- ================= 声明文字结束 ================= -->
         </div>
     </div>
 
     <script>
-        // ============================================================
-        // 首次访问提示（已按要求修改）
-        // ============================================================
-        alert('记得看右上角的设置按钮啊！！！\n如果卡顿非常严重，请更换chrome浏览器(或者chrome内核浏览器,比如夸克浏览器实在不行请使用手机浏览器)');
+        document.addEventListener('DOMContentLoaded', () => {
 
-        // ============================================================
-        //  配置
-        // ============================================================
-        const paramsMeta = {
-            bgAlpha: { min: 0, max: 1, fixed: 2 },
-            blur: { min: 0, max: 100, fixed: 1 },
-            saturate: { min: 0, max: 300, fixed: 1 },
-            shadowAlpha: { min: 0.01, max: 1, fixed: 2 },
-            scaleMin: { min: 0.1, max: 10, fixed: 1 },
-            scaleMax: { min: 0.1, max: 10, fixed: 1 },
-            transRange: { min: 0, max: 300, fixed: 1 },
-            bubbleSize: { min: 0, max: 100, fixed: 1 },
-            bubbleSec: { min: 0.2, max: 10, fixed: 2 },
-            pageTransSec: { min: 0, max: 2.5, fixed: 2 }
-        };
+            // ---- 跳转按钮 ----
+            const jumpBtn = document.getElementById('jumpBtn');
+            if (jumpBtn) {
+                jumpBtn.addEventListener('click', () => {
+                    const url = "https://1821860134.mshare.123pan.cn/123pan/zdIajv-gRCi3";
+                    const win = window.open(url, "_blank");
+                    if (!win || win.closed || typeof win.closed === 'undefined') {
+                        window.location.href = url;
+                    }
+                });
+            }
 
-        const DEFAULT_CONFIG = {
-            bgAlpha: 0.20,
-            blur: 38,
-            saturate: 60,
-            shadowAlpha: 0.06,
-            scaleMin: 1,
-            scaleMax: 2.5,
-            transRange: 30,
-            bubbleSize: 50,
-            bubbleSec: 1,
-            pageTransSec: 0.3,
-            bgColor: "#ffffff"   // 默认白色背景
-        };
+            // ---- 声明按钮 ----
+            const declareBtn = document.getElementById('declareBtn');
+            if (declareBtn) {
+                declareBtn.addEventListener('click', () => {
+                    switchMainView("page-announce");
+                });
+            }
 
-        const config = { ...DEFAULT_CONFIG };
+            // ---- 右上角设置按钮 ----
+            const settingBtn = document.getElementById('goSetting');
+            if (settingBtn) {
+                settingBtn.addEventListener('click', () => {
+                    const sp = document.getElementById('page-setting');
+                    const dp = document.getElementById('page-display');
+                    const ap = document.getElementById('page-announce');
+                    if (sp.classList.contains("active") || dp.classList.contains("active") || ap.classList.contains("active")) {
+                        switchMainView("page-home");
+                    } else {
+                        switchMainView("page-setting");
+                    }
+                });
+            }
 
-        // ============================================================
-        //  DOM 引用
-        // ============================================================
-        const allViews = document.querySelectorAll(".view-page");
-        const allCards = document.querySelectorAll(".card");
-        const bubbleElems = document.querySelectorAll(".bubble");
-        const bgWrap = document.querySelector(".bg-wrap");
-        const settingBtn = document.getElementById("goSetting");
-        const resetBtn = document.getElementById("resetDefault");
-        const liteToggle = document.getElementById("liteToggle");
-        const toggleBg = document.getElementById("toggleBg");
-        const backHomeBtn = document.getElementById("backHome");
-        const jumpBtn = document.getElementById("jumpBtn");
+            // ---- 左上角返回箭头 ----
+            const backBtn = document.getElementById('backBtn');
+            if (backBtn) {
+                backBtn.addEventListener('click', () => {
+                    const dp = document.getElementById('page-display');
+                    const sp = document.getElementById('page-setting');
+                    const ap = document.getElementById('page-announce');
+                    if (dp.classList.contains("active")) {
+                        switchMainView("page-setting");
+                    } else if (ap.classList.contains("active")) {
+                        switchMainView("page-home");
+                    } else if (sp.classList.contains("active")) {
+                        switchMainView("page-home");
+                    }
+                });
+            }
 
-        let isLiteMode = false;
-        let bubbleTimer = null;
+            // ---- 进入画面设置 ----
+            let displayTipShown = false;
+            const goDisplayBtn = document.getElementById('goDisplay');
+            if (goDisplayBtn) {
+                goDisplayBtn.addEventListener('click', () => {
+                    if (!displayTipShown) {
+                        displayTipShown = true;
+                        alert('点击数字可呼出输入法修改数字');
+                    }
+                    switchMainView("page-display");
+                });
+            }
 
-        // ============================================================
-        //  跳转链接
-        // ============================================================
-        const JUMP_URL = "https://1821860134.share.123pan.cn/123pan/zdIajv-gRCi3"; // 可替换为你的链接
+            // ---- 恢复默认 ----
+            const resetBtn = document.getElementById('resetDefault');
+            if (resetBtn) resetBtn.addEventListener('click', () => {
+                Object.assign(config, DEFAULT_CONFIG);
+                const updateList = [
+                    ['BgAlpha', 'bgAlpha', v => v.toFixed(2)],
+                    ['Shadow', 'shadowAlpha', v => v.toFixed(2)],
+                    ['ScaleMin', 'scaleMin', v => v.toFixed(1)], ['ScaleMax', 'scaleMax', v => v.toFixed(1)],
+                    ['Trans', 'transRange', v => v.toFixed(0)], ['BubbleSize', 'bubbleSize', v => v.toFixed(1)],
+                    ['BubbleTime', 'bubbleSec', v => v.toFixed(2)], ['PageTrans', 'pageTransSec', v => v.toFixed(2)]
+                ];
+                updateList.forEach(([name, key, fmt]) => {
+                    const inp = document.getElementById('inp' + name);
+                    const val = document.getElementById('val' + name);
+                    if (inp && val) { inp.value = config[key]; val.textContent = fmt(config[key]); updateSliderFill(inp); }
+                });
+                const inpMusicVol = document.getElementById('inpMusicVol');
+                const valMusicVol = document.getElementById('valMusicVol');
+                if (inpMusicVol && valMusicVol) { inpMusicVol.value = config.musicVol; valMusicVol.textContent = config.musicVol; updateSliderFill(inpMusicVol); }
+                applyVolume();
+                applyBackground("#ffffff");
+                updateCardStyle(); updatePageTrans(); updateBubbleSize(); restartBubbleAnim();
+            });
 
-        jumpBtn.addEventListener("click", () => {
-            window.open(JUMP_URL, "_blank");
+            // ---- 音乐开关 ----
+            const musicToggle = document.getElementById('musicToggle');
+            if (musicToggle) {
+                musicToggle.addEventListener('click', () => {
+                    musicEnabled = !musicEnabled;
+                    updateMusicButton();
+                    if (musicEnabled) { applyVolume(); audio.play().catch(() => {}); } else { audio.pause(); }
+                });
+            }
+
+            // ---- 背景切换 ----
+            const toggleBg = document.getElementById('toggleBg');
+            if (toggleBg) {
+                toggleBg.addEventListener('click', () => {
+                    if (config.bgColor === "#000000") applyBackground("#ffffff");
+                    else applyBackground("#000000");
+                });
+            }
+
+            // ---- 首次提示 & 3秒后音乐提示 ----
+            setTimeout(() => {
+                alert('音乐已经默认开启，可到右上角设置关闭');
+                setTimeout(() => {
+                    alert('ERROR:\n Can Not Find Music Resources');
+                }, 3000);
+            }, 100);
+
+            // ---- 初始化 ----
+            initBubbles();
+            initSliders();
+            applyBackground("#ffffff");
+            updateMusicButton();
+            applyVolume();
+            playMusic();
+
+            window.addEventListener('resize', () => {
+                document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
+            });
         });
 
         // ============================================================
-        //  页面切换 (仅 home / setting)
+        // 核心配置与状态
+        // ============================================================
+        const paramsMeta = {
+            bgAlpha: { min: 0, max: 1, fixed: 2 },
+            shadowAlpha: { min: 0.01, max: 1, fixed: 2 },
+            scaleMin: { min: 0.1, max: 10, fixed: 1 }, scaleMax: { min: 0.1, max: 10, fixed: 1 },
+            transRange: { min: 0, max: 300, fixed: 1 }, bubbleSize: { min: 0, max: 100, fixed: 1 },
+            bubbleSec: { min: 0.2, max: 10, fixed: 2 }, pageTransSec: { min: 0, max: 2.5, fixed: 2 }
+        };
+
+        const DEFAULT_CONFIG = {
+            bgAlpha: 0.20, shadowAlpha: 0.06, scaleMin: 1, scaleMax: 2.5,
+            transRange: 30, bubbleSize: 50, bubbleSec: 1, pageTransSec: 0.3, bgColor: "#ffffff", 
+            musicVol: 100
+        };
+        const config = { ...DEFAULT_CONFIG };
+
+        const allViews = document.querySelectorAll(".view-page");
+        const allCards = document.querySelectorAll(".card");
+        const bgWrap = document.querySelector(".bg-wrap");
+        const audio = document.getElementById("bgMusic");
+        const backBtn = document.getElementById('backBtn');
+
+        let musicEnabled = true;
+        let bubbleTimer = null;
+
+        // ============================================================
+        // 页面切换
         // ============================================================
         function switchMainView(targetId) {
             allViews.forEach(v => v.classList.remove("active"));
             setTimeout(() => {
                 const el = document.getElementById(targetId);
                 if (el) el.classList.add("active");
+                if (backBtn) {
+                    if (targetId === "page-home") {
+                        backBtn.classList.remove("visible");
+                    } else {
+                        backBtn.classList.add("visible");
+                    }
+                }
+                setTimeout(() => {
+                    document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
+                }, 50);
             }, config.pageTransSec * 1000);
         }
 
-        settingBtn.onclick = () => {
-            const sp = document.getElementById("page-setting");
-            if (sp.classList.contains("active")) {
-                switchMainView("page-home");
+        // ============================================================
+        // 音乐控制
+        // ============================================================
+        function updateMusicButton() {
+            const btn = document.getElementById('musicToggle');
+            if (!btn) return;
+            if (musicEnabled) {
+                btn.classList.remove("off");
+                btn.textContent = "🎵 音乐：开启";
             } else {
-                switchMainView("page-setting");
+                btn.classList.add("off");
+                btn.textContent = "🔇 音乐：关闭";
             }
-        };
+        }
 
-        backHomeBtn.onclick = () => {
-            switchMainView("page-home");
-        };
+        function applyVolume() {
+            if (audio) audio.volume = config.musicVol / 100;
+        }
+
+        function playMusic() {
+            if (!audio || !musicEnabled) return;
+            applyVolume();
+            audio.play().catch(() => {
+                const oncePlay = () => {
+                    if (musicEnabled && audio) audio.play().catch(() => {});
+                    document.removeEventListener('click', oncePlay);
+                };
+                document.addEventListener('click', oncePlay, { once: true });
+            });
+        }
+
+        audio.addEventListener('error', () => {
+            console.warn("音乐文件加载失败。请确保 music.mp3 与 HTML 文件在同一目录下。");
+            musicEnabled = false;
+            updateMusicButton();
+        });
 
         // ============================================================
-        //  泡泡动画
+        // 泡泡动画
         // ============================================================
         function updateBubbleDuration() {
             document.documentElement.style.setProperty('--bubble-duration', config.bubbleSec + 's');
         }
-
         function animateBubble(bubble) {
             const r = config.transRange;
             const x = (Math.random() * r * 2 - r) + "%";
@@ -639,23 +803,29 @@
             const s = config.scaleMin + Math.random() * (config.scaleMax - config.scaleMin);
             bubble.style.transform = `translate3d(${x},${y},0) scale(${s})`;
         }
-
         function restartBubbleAnim() {
             if (bubbleTimer) clearInterval(bubbleTimer);
             updateBubbleDuration();
-            bubbleElems.forEach(bub => animateBubble(bub));
-            const intervalMs = config.bubbleSec * 1000;
-            bubbleTimer = setInterval(() => {
-                bubbleElems.forEach(bub => animateBubble(bub));
-            }, intervalMs);
+            document.querySelectorAll(".bubble").forEach(bub => animateBubble(bub));
+            bubbleTimer = setInterval(() => { document.querySelectorAll(".bubble").forEach(bub => animateBubble(bub)); }, config.bubbleSec * 1000);
+        }
+
+        function initBubbles() {
+            document.querySelectorAll(".bubble").forEach(bub => {
+                bub.style.transition = 'none';
+                animateBubble(bub);
+            });
+            void document.body.offsetHeight;
+            document.querySelectorAll(".bubble").forEach(bub => { bub.style.transition = ''; });
+            restartBubbleAnim();
         }
 
         // ============================================================
-        //  卡片样式
+        // 卡片样式
         // ============================================================
         function updateCardStyle() {
             const bg = `rgba(255,255,255,${config.bgAlpha})`;
-            const filter = `blur(${config.blur}px) saturate(${config.saturate}%)`;
+            const filter = `blur(38px) saturate(60%)`;
             const shadow = `0 8px 32px rgba(0,0,0,${config.shadowAlpha})`;
             allCards.forEach(card => {
                 card.style.background = bg;
@@ -667,254 +837,177 @@
         }
 
         function updatePageTrans() {
-            const t = config.pageTransSec;
-            allViews.forEach(p => {
-                p.style.transition = `opacity ${t}s ease, transform ${t}s ease`;
-            });
+            allViews.forEach(p => { p.style.transition = `opacity ${config.pageTransSec}s ease, transform ${config.pageTransSec}s ease`; });
         }
 
         function updateBubbleSize() {
-            const size = config.bubbleSize + '%';
-            bubbleElems.forEach(bub => {
-                bub.style.setProperty('--bubble-size', size);
-            });
+            document.querySelectorAll(".bubble").forEach(bub => { bub.style.setProperty('--bubble-size', config.bubbleSize + '%'); });
         }
 
         // ============================================================
-        //  背景应用（统一管理）
+        // 背景应用
         // ============================================================
         function applyBackground(color) {
             config.bgColor = color;
             bgWrap.style.background = color;
+            const toggleBg = document.getElementById('toggleBg');
             if (color === "#ffffff") {
                 document.body.classList.remove("bg-black");
-                toggleBg.className = "btn-black";  // 白底黑按钮
+                if (toggleBg) toggleBg.className = "btn-black";
             } else {
                 document.body.classList.add("bg-black");
-                toggleBg.className = "btn-white";   // 黑底白按钮
+                if (toggleBg) toggleBg.className = "btn-white";
             }
+            requestAnimationFrame(() => {
+                document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
+            });
         }
 
         // ============================================================
-        //  滑块系统
+        // 滑块逻辑
         // ============================================================
         function updateSliderFill(slider) {
+            if (!slider) return;
             const min = parseFloat(slider.min);
             const max = parseFloat(slider.max);
             const val = parseFloat(slider.value);
             const percent = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
-            const fillId = slider.id.replace('inp', 'fill');
-            const fillEl = document.getElementById(fillId);
-            if (fillEl) fillEl.style.width = percent + '%';
-        }
 
-        function bindSlider(inpId, valId, cfgKey, formatFn) {
-            const inp = document.getElementById(inpId);
-            const valSpan = document.getElementById(valId);
-            inp.addEventListener("input", () => {
-                const val = Number(inp.value);
-                config[cfgKey] = val;
-                valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2);
-                updateSliderFill(inp);
+            const thumbWidth = 22;
+            const trackWidth = slider.offsetWidth;
 
-                if (cfgKey === 'bubbleSec') {
-                    restartBubbleAnim();
-                } else if (cfgKey === 'pageTransSec') {
-                    updatePageTrans();
-                } else if (cfgKey === 'bubbleSize') {
-                    updateBubbleSize();
-                } else {
-                    updateCardStyle();
-                }
-            });
-            updateSliderFill(inp);
-        }
-
-        bindSlider("inpBgAlpha", "valBgAlpha", "bgAlpha", v => v.toFixed(2));
-        bindSlider("inpBlur", "valBlur", "blur", v => v.toFixed(1));
-        bindSlider("inpSat", "valSat", "saturate", v => v.toFixed(0));
-        bindSlider("inpShadow", "valShadow", "shadowAlpha", v => v.toFixed(2));
-        bindSlider("inpTrans", "valTrans", "transRange", v => v.toFixed(0));
-        bindSlider("inpBubbleSize", "valBubbleSize", "bubbleSize", v => v.toFixed(1));
-        bindSlider("inpBubbleTime", "valBubbleTime", "bubbleSec", v => v.toFixed(2));
-        bindSlider("inpPageTrans", "valPageTrans", "pageTransSec", v => v.toFixed(2));
-
-        // 缩放双滑块
-        const inpScaleMin = document.getElementById("inpScaleMin");
-        const inpScaleMax = document.getElementById("inpScaleMax");
-        const valScaleMin = document.getElementById("valScaleMin");
-        const valScaleMax = document.getElementById("valScaleMax");
-
-        function refreshScale() {
-            let min = Number(inpScaleMin.value);
-            let max = Number(inpScaleMax.value);
-            if (min >= max) min = Number((max - 0.001).toFixed(3));
-            config.scaleMin = min;
-            config.scaleMax = max;
-            valScaleMin.textContent = min.toFixed(1);
-            valScaleMax.textContent = max.toFixed(1);
-            updateSliderFill(inpScaleMin);
-            updateSliderFill(inpScaleMax);
-        }
-        inpScaleMin.oninput = refreshScale;
-        inpScaleMax.oninput = refreshScale;
-
-        // ============================================================
-        //  背景切换按钮
-        // ============================================================
-        toggleBg.onclick = () => {
-            if (config.bgColor === "#000000") {
-                applyBackground("#ffffff");
-            } else {
-                applyBackground("#000000");
+            let visualPercent = percent;
+            if (trackWidth > 0) {
+                const fillWidth = thumbWidth + (trackWidth - thumbWidth) * (percent / 100);
+                visualPercent = (fillWidth / trackWidth) * 100;
             }
-        };
 
-        // ============================================================
-        //  数值点击编辑
-        // ============================================================
-        function initEditableValues() {
-            document.querySelectorAll('[data-key]').forEach(span => bindEditEvent(span));
+            const trackEl = slider.closest('.slider-track');
+            if (trackEl) {
+                const fillEl = trackEl.querySelector('.slider-fill');
+                if (fillEl) {
+                    fillEl.style.width = visualPercent + '%';
+                }
+            }
         }
 
-        function bindEditEvent(span) {
-            span.addEventListener('click', function handler() {
-                const key = this.dataset.key;
-                const meta = paramsMeta[key];
-                const oldVal = config[key];
-                const input = document.createElement('input');
-                input.type = 'number';
-                input.step = 'any';
-                input.min = meta.min;
-                input.max = meta.max;
-                input.value = oldVal;
-                input.style.cssText =
-                    `width:60px;text-align:center;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:inherit;padding:2px 4px;font-size:14px;outline:none;`;
-                this.replaceWith(input);
-                input.focus();
-                input.select();
-                const commit = () => {
-                    let newVal = parseFloat(input.value);
-                    if (isNaN(newVal)) newVal = oldVal;
-                    newVal = Math.max(meta.min, Math.min(meta.max, newVal));
-                    newVal = Number(newVal.toFixed(meta.fixed));
-                    config[key] = newVal;
-                    const inpId = 'inp' + key.charAt(0).toUpperCase() + key.slice(1);
-                    const inpEl = document.getElementById(inpId);
-                    if (inpEl) { inpEl.value = newVal;
-                        updateSliderFill(inpEl); }
-                    const newSpan = document.createElement('span');
-                    newSpan.id = this.id;
-                    newSpan.dataset.key = key;
-                    newSpan.textContent = newVal.toFixed(meta.fixed);
-                    bindEditEvent(newSpan);
-                    input.replaceWith(newSpan);
-                    // scale联动
-                    if (key === 'scaleMin' && config.scaleMin >= config.scaleMax) {
-                        config.scaleMax = Number((config.scaleMin + 0.001).toFixed(3));
-                        document.getElementById('inpScaleMax').value = config.scaleMax;
-                        updateSliderFill(document.getElementById('inpScaleMax'));
-                        document.getElementById('valScaleMax').textContent = config.scaleMax.toFixed(paramsMeta.scaleMax
-                            .fixed);
-                    }
-                    if (key === 'scaleMax' && config.scaleMin >= config.scaleMax) {
-                        config.scaleMin = Number((config.scaleMax - 0.001).toFixed(3));
-                        document.getElementById('inpScaleMin').value = config.scaleMin;
-                        updateSliderFill(document.getElementById('inpScaleMin'));
-                        document.getElementById('valScaleMin').textContent = config.scaleMin.toFixed(paramsMeta.scaleMin
-                            .fixed);
-                    }
-                    if (key === 'bubbleSec') restartBubbleAnim();
-                    else if (key === 'pageTransSec') updatePageTrans();
-                    else if (key === 'bubbleSize') updateBubbleSize();
-                    else updateCardStyle();
-                };
-                input.addEventListener('blur', commit);
-                input.addEventListener('keydown', e => {
-                    if (e.key === 'Enter') input.blur();
-                    if (e.key === 'Escape') { input.value = oldVal;
-                        input.blur(); }
-                });
-            });
-        }
-
-        // ============================================================
-        //  恢复默认
-        // ============================================================
-        resetBtn.onclick = () => {
-            Object.assign(config, DEFAULT_CONFIG);
-            const updateList = [
-                ['BgAlpha', 'bgAlpha', v => v.toFixed(2)],
-                ['Blur', 'blur', v => v.toFixed(1)],
-                ['Sat', 'saturate', v => v.toFixed(0)],
-                ['Shadow', 'shadowAlpha', v => v.toFixed(2)],
-                ['ScaleMin', 'scaleMin', v => v.toFixed(1)],
-                ['ScaleMax', 'scaleMax', v => v.toFixed(1)],
-                ['Trans', 'transRange', v => v.toFixed(0)],
-                ['BubbleSize', 'bubbleSize', v => v.toFixed(1)],
-                ['BubbleTime', 'bubbleSec', v => v.toFixed(2)],
-                ['PageTrans', 'pageTransSec', v => v.toFixed(2)]
-            ];
-            updateList.forEach(([name, key, fmt]) => {
-                const inp = document.getElementById('inp' + name);
-                const val = document.getElementById('val' + name);
-                inp.value = config[key];
-                val.textContent = fmt(config[key]);
-                updateSliderFill(inp);
-            });
-            // 重置背景为白色
-            applyBackground("#ffffff");
-            // 重置流畅模式
-            document.body.classList.remove("lite-mode");
-            isLiteMode = false;
-            liteToggle.textContent = "⚡ 开启流畅模式 (保留4个高对比泡泡)";
-            // 刷新样式
-            updateCardStyle();
-            updatePageTrans();
-            updateBubbleSize();
-            restartBubbleAnim();
-        };
-
-        // ============================================================
-        //  流畅模式
-        // ============================================================
-        liteToggle.onclick = () => {
-            isLiteMode = !isLiteMode;
-            document.body.classList.toggle('lite-mode', isLiteMode);
-            liteToggle.textContent = isLiteMode ? "🎨 关闭流畅模式 (恢复7个泡泡)" :
-                "⚡ 开启流畅模式 (保留4个高对比泡泡)";
-        };
-
-        // ============================================================
-        //  初始化
-        // ============================================================
-        window.addEventListener('load', () => {
-            // 应用默认白色背景
-            applyBackground("#ffffff");
-
-            // 初始泡泡位置（无过渡防闪烁）
-            bubbleElems.forEach(bub => {
-                bub.style.transition = 'none';
-                animateBubble(bub);
-            });
-            void document.body.offsetHeight;
-            bubbleElems.forEach(bub => {
-                bub.style.transition = '';
-            });
-
-            updateCardStyle();
-            updatePageTrans();
-            updateBubbleSize();
-            restartBubbleAnim();
-            initEditableValues();
-
-            requestAnimationFrame(() => {
-                document.querySelectorAll('.slider-row input[type="range"]').forEach(inp => {
+        function initSliders() {
+            function bindSlider(inpId, valId, cfgKey, formatFn) {
+                const inp = document.getElementById(inpId);
+                const valSpan = document.getElementById(valId);
+                if (!inp || !valSpan) return;
+                inp.addEventListener("input", () => {
+                    const val = Number(inp.value);
+                    config[cfgKey] = val;
+                    valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2);
                     updateSliderFill(inp);
-                });
-            });
-        });
-    </script>
 
+                    if (cfgKey === 'bubbleSec') restartBubbleAnim();
+                    else if (cfgKey === 'pageTransSec') updatePageTrans();
+                    else if (cfgKey === 'bubbleSize') updateBubbleSize();
+                    else updateCardStyle();
+                });
+                updateSliderFill(inp);
+            }
+
+            bindSlider("inpBgAlpha", "valBgAlpha", "bgAlpha", v => v.toFixed(2));
+            bindSlider("inpShadow", "valShadow", "shadowAlpha", v => v.toFixed(2));
+            bindSlider("inpTrans", "valTrans", "transRange", v => v.toFixed(0));
+            bindSlider("inpBubbleSize", "valBubbleSize", "bubbleSize", v => v.toFixed(1));
+            bindSlider("inpBubbleTime", "valBubbleTime", "bubbleSec", v => v.toFixed(2));
+            bindSlider("inpPageTrans", "valPageTrans", "pageTransSec", v => v.toFixed(2));
+
+            // 音量滑块
+            const inpMusicVol = document.getElementById("inpMusicVol");
+            const valMusicVol = document.getElementById("valMusicVol");
+            if (inpMusicVol && valMusicVol) {
+                inpMusicVol.addEventListener("input", () => {
+                    const v = Number(inpMusicVol.value);
+                    config.musicVol = v;
+                    valMusicVol.textContent = v;
+                    applyVolume();
+                    updateSliderFill(inpMusicVol);
+                });
+                updateSliderFill(inpMusicVol);
+            }
+
+            // 缩放双滑块
+            const inpScaleMin = document.getElementById("inpScaleMin");
+            const inpScaleMax = document.getElementById("inpScaleMax");
+            const valScaleMin = document.getElementById("valScaleMin");
+            const valScaleMax = document.getElementById("valScaleMax");
+
+            if (inpScaleMin && inpScaleMax && valScaleMin && valScaleMax) {
+                function refreshScale() {
+                    let min = Number(inpScaleMin.value);
+                    let max = Number(inpScaleMax.value);
+                    if (min >= max) min = Number((max - 0.001).toFixed(3));
+                    config.scaleMin = min; config.scaleMax = max;
+                    valScaleMin.textContent = min.toFixed(1);
+                    valScaleMax.textContent = max.toFixed(1);
+                    updateSliderFill(inpScaleMin); updateSliderFill(inpScaleMax);
+                }
+                inpScaleMin.addEventListener("input", refreshScale);
+                inpScaleMax.addEventListener("input", refreshScale);
+                updateSliderFill(inpScaleMin);
+                updateSliderFill(inpScaleMax);
+            }
+
+            // 数值点击编辑
+            document.querySelectorAll('[data-key]').forEach(span => bindEditEvent(span));
+
+            function bindEditEvent(span) {
+                span.addEventListener('click', function handler() {
+                    const key = this.dataset.key;
+                    const meta = paramsMeta[key];
+                    if (!meta) return;
+                    const oldVal = config[key];
+                    const input = document.createElement('input');
+                    input.type = 'number'; input.step = 'any'; input.min = meta.min; input.max = meta.max;
+                    input.value = oldVal;
+                    input.style.cssText = `width:60px;text-align:center;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:inherit;padding:2px 4px;font-size:14px;outline:none;`;
+                    this.replaceWith(input); input.focus(); input.select();
+                    const commit = () => {
+                        let newVal = parseFloat(input.value);
+                        if (isNaN(newVal)) newVal = oldVal;
+                        newVal = Math.max(meta.min, Math.min(meta.max, newVal));
+                        newVal = Number(newVal.toFixed(meta.fixed));
+                        config[key] = newVal;
+                        const inpId = 'inp' + key.charAt(0).toUpperCase() + key.slice(1);
+                        const inpEl = document.getElementById(inpId);
+                        if (inpEl) { inpEl.value = newVal; updateSliderFill(inpEl); }
+                        const newSpan = document.createElement('span');
+                        newSpan.id = this.id; newSpan.dataset.key = key;
+                        newSpan.textContent = newVal.toFixed(meta.fixed);
+                        bindEditEvent(newSpan);
+                        input.replaceWith(newSpan);
+                        if (key === 'scaleMin' && config.scaleMin >= config.scaleMax) {
+                            config.scaleMax = Number((config.scaleMin + 0.001).toFixed(3));
+                            const el = document.getElementById('inpScaleMax');
+                            if (el) { el.value = config.scaleMax; updateSliderFill(el); }
+                            const vEl = document.getElementById('valScaleMax');
+                            if (vEl) vEl.textContent = config.scaleMax.toFixed(paramsMeta.scaleMax.fixed);
+                        }
+                        if (key === 'scaleMax' && config.scaleMin >= config.scaleMax) {
+                            config.scaleMin = Number((config.scaleMax - 0.001).toFixed(3));
+                            const el = document.getElementById('inpScaleMin');
+                            if (el) { el.value = config.scaleMin; updateSliderFill(el); }
+                            const vEl = document.getElementById('valScaleMin');
+                            if (vEl) vEl.textContent = config.scaleMin.toFixed(paramsMeta.scaleMin.fixed);
+                        }
+                        if (key === 'bubbleSec') restartBubbleAnim();
+                        else if (key === 'pageTransSec') updatePageTrans();
+                        else if (key === 'bubbleSize') updateBubbleSize();
+                        else updateCardStyle();
+                    };
+                    input.addEventListener('blur', commit);
+                    input.addEventListener('keydown', e => {
+                        if (e.key === 'Enter') input.blur();
+                        if (e.key === 'Escape') { input.value = oldVal; input.blur(); }
+                    });
+                });
+            }
+        }
+    </script>
 </body>
 </html>
