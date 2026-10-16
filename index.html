@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>你好</title>
+    <title>极简跳转</title>
     <style>
         * {
             box-sizing: border-box;
@@ -62,17 +62,18 @@
             left: 0;
             right: 0;
             top: 50%;
-            transform: translateY(-50%) scale(0.96);
+            transform: translateY(-50%);
             opacity: 0;
-            transition: opacity 0.3s ease, transform 0.3s ease;
             pointer-events: none;
-            will-change: opacity, transform;
+            z-index: 1;
+            will-change: opacity;
         }
         .view-page.active {
             opacity: 1;
-            transform: translateY(-50%) scale(1);
             pointer-events: auto;
+            z-index: 2;
         }
+
         .card {
             background: rgba(255, 255, 255, 0.20);
             border: 1px solid rgba(255, 255, 255, 0.20);
@@ -98,10 +99,9 @@
             gap: 22px;
         }
 
-        /* ====== 统一按钮样式（MIUI 蓝色） ====== */
         .btn-jump,
         .btn-declare {
-            background: #3B82F6; /* MIUI 风格蓝色 */
+            background: #3B82F6;
             color: #ffffff;
             border: none;
             border-radius: 24px;
@@ -135,7 +135,69 @@
             transform: translateX(6px);
         }
 
-        /* 左上角返回箭头 */
+        .setting-btn {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.08);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(0, 0, 0, 0.12);
+            color: #111111;
+            font-size: 22px;
+            cursor: pointer;
+            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.15s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
+            -webkit-touch-callout: none;
+            user-select: none;
+        }
+        .setting-btn:active { transform: scale(0.92); }
+        body.bg-black .setting-btn {
+            background: rgba(255, 255, 255, 0.22);
+            border-color: rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+        }
+        .setting-btn.anim-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .morph-ball {
+            position: fixed;
+            z-index: 10000;
+            display: none;
+            background: rgba(255, 255, 255, 0.30);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            pointer-events: none;
+            contain: layout style paint;
+            transform: translateZ(0);
+        }
+        .morph-ball::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--morph-color, #3B82F6);
+            opacity: 1;
+            transition: opacity var(--fade-duration, 0ms) ease;
+            border-radius: inherit;
+            pointer-events: none;
+        }
+        .morph-ball.fade-color::before {
+            opacity: 0;
+        }
+        body.bg-black .morph-ball {
+            background: rgba(0, 0, 0, 0.35);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
         .back-btn {
             position: fixed;
             top: 20px;
@@ -151,7 +213,7 @@
             color: #111111;
             font-size: 24px;
             cursor: pointer;
-            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.25s ease;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -172,50 +234,16 @@
             color: #ffffff;
         }
 
-        .setting-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            color: #111111;
-            font-size: 22px;
-            cursor: pointer;
-            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-            -webkit-touch-callout: none;
-            user-select: none;
-        }
-        .setting-btn:active { transform: scale(0.92); }
-        body.bg-black .setting-btn {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.18);
-            color: #ffffff;
-        }
-
-        /* ========== 设置面板 / 声明面板 通用 ========== */
         .set-card {
             max-height: 78vh;
             overflow-y: auto;
             text-align: left;
             position: relative;
-            isolation: isolate;
             scrollbar-width: none;
             -ms-overflow-style: none;
             -webkit-overflow-scrolling: touch;
         }
-        .set-card::-webkit-scrollbar {
-            display: none;
-        }
+        .set-card::-webkit-scrollbar { display: none; }
         .set-card .title { text-align: center; margin-bottom: 24px; }
 
         .announce-content {
@@ -226,9 +254,7 @@
             word-break: break-word;
             transition: color 0.3s ease;
         }
-        body.bg-black .announce-content {
-            color: #ffffff;
-        }
+        body.bg-black .announce-content { color: #ffffff; }
 
         .slider-row { margin: 18px 0; }
         .slider-row label {
@@ -241,7 +267,6 @@
         }
         body.bg-black .slider-row label { color: #ffffff; }
 
-        /* ====== 滑块（轨道 24px，滑块头 22px） ====== */
         .slider-track {
             position: relative;
             width: 100%;
@@ -263,7 +288,6 @@
             border-radius: 999px;
             pointer-events: none;
             z-index: 1;
-            transition: width 0.05s linear;
         }
         .slider-row input[type="range"] {
             -webkit-appearance: none;
@@ -271,18 +295,19 @@
             position: relative;
             z-index: 2;
             width: 100%;
-            height: 24px;
+            height: 22px;
+            margin-top: 1px;
             border-radius: 999px;
             outline: none;
             cursor: pointer;
             background: transparent;
             box-sizing: border-box;
-            margin: 0;
             padding: 0;
             border: none;
+            touch-action: pan-y;
         }
         .slider-row input[type="range"]::-webkit-slider-runnable-track {
-            height: 24px;
+            height: 22px;
             background: transparent;
             border-radius: 999px;
             border: none;
@@ -295,7 +320,7 @@
             border-radius: 50%;
             background: #ffffff;
             border: 2px solid #1989fa;
-            margin-top: 1px;
+            margin-top: 0;
             position: relative;
             z-index: 4;
             box-sizing: border-box;
@@ -309,7 +334,7 @@
             box-sizing: border-box;
         }
         .slider-row input[type="range"]::-moz-range-track {
-            height: 24px;
+            height: 22px;
             background: transparent;
             border-radius: 999px;
             border: none;
@@ -326,17 +351,17 @@
         .music-row { margin: 6px 0 4px; }
         .btn-toggle {
             width: 100%;
-            padding: 16px 20px;
-            border-radius: 16px;
+            padding: 18px 20px;
+            border-radius: 18px;
             border: none;
-            font-size: 18px;
-            font-weight: 550;
+            font-size: 20px;
+            font-weight: 600;
             cursor: pointer;
             transition: 0.25s;
-            background: linear-gradient(135deg, #1989fa, #6c5ce7);
+            background: #3B82F6;
             color: #ffffff;
-            box-shadow: 0 6px 20px rgba(25, 137, 250, 0.28);
-            letter-spacing: 0.5px;
+            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.35);
+            letter-spacing: 1px;
         }
         .btn-toggle:active { transform: scale(0.97); }
         .btn-toggle.off {
@@ -424,17 +449,16 @@
 
     <audio id="bgMusic" src="./music.mp3" preload="auto" loop></audio>
 
+    <div class="morph-ball" id="morphBall"></div>
+
     <button class="back-btn" id="backBtn" aria-label="返回">←</button>
     <button class="setting-btn" id="goSetting" aria-label="设置">⚙</button>
 
-    <!-- 首页 -->
     <div class="view-page active" id="page-home">
         <div class="card">
             <div class="title">✨ 欢迎</div>
             <div class="col-center">
-                <!-- 声明按钮（已调换到上方） -->
-                <button class="btn-declare" id="declareBtn">周记</button>
-                <!-- 立即前往按钮（已调换到下方） -->
+                <button class="btn-declare" id="declareBtn">📄 声明</button>
                 <button class="btn-jump" id="jumpBtn">
                     <span>立即前往</span>
                     <span class="arrow">→</span>
@@ -443,7 +467,6 @@
         </div>
     </div>
 
-    <!-- 一级设置菜单 -->
     <div class="view-page" id="page-setting">
         <div class="card set-card">
             <div class="title">⚙ 设置</div>
@@ -474,7 +497,6 @@
         </div>
     </div>
 
-    <!-- 二级菜单：画面设置 -->
     <div class="view-page" id="page-display">
         <div class="card set-card">
             <div class="title">🎨 画面设置</div>
@@ -526,60 +548,35 @@
                 </div>
             </div>
             <div class="slider-row">
-                <label>页面切换过渡时长 (0~2.5s) <span id="valPageTrans" data-key="pageTransSec">0.30</span>s</label>
+                <label>页面切换过渡时长 (0~2.5s) <span id="valPageTrans" data-key="pageTransSec">0.60</span>s</label>
                 <div class="slider-track">
                     <div class="slider-fill" id="fillPageTrans"></div>
-                    <input type="range" min="0" max="2.5" step="0.001" id="inpPageTrans" value="0.3">
+                    <input type="range" min="0" max="2.5" step="0.001" id="inpPageTrans" value="0.6">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 二级菜单：声明 -->
     <div class="view-page" id="page-announce">
         <div class="card set-card">
-            <div class="title">周记</div>
-            <!-- ================= 声明文字开始 ================= -->
-            <div class="announce-content">    
+            <div class="title">📄 声明</div>
+            <div class="announce-content">在这里填写你的声明文字。
 
+你可以写多行，比如：
+1. 本页面仅为个人使用，不构成任何商业服务。
+2. 跳转链接的内容与本页面作者无关。
+3. 如有疑问，请联系作者。
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-太累了，心已经死了(*_*)</div>
-            <!-- ================= 声明文字结束 ================= -->
+（把这段文字替换成你自己的内容即可）</div>
         </div>
     </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-
-            // ---- 跳转按钮 ----
             const jumpBtn = document.getElementById('jumpBtn');
             if (jumpBtn) {
                 jumpBtn.addEventListener('click', () => {
-                    const url = "https://1821860134.mshare.123pan.cn/123pan/zdIajv-gRCi3";
+                    const url = "https://www.bilibili.com";
                     const win = window.open(url, "_blank");
                     if (!win || win.closed || typeof win.closed === 'undefined') {
                         window.location.href = url;
@@ -587,30 +584,32 @@
                 });
             }
 
-            // ---- 声明按钮 ----
             const declareBtn = document.getElementById('declareBtn');
             if (declareBtn) {
                 declareBtn.addEventListener('click', () => {
-                    switchMainView("page-announce");
+                    animateButtonToPage(declareBtn, 'page-announce');
                 });
             }
 
-            // ---- 右上角设置按钮 ----
             const settingBtn = document.getElementById('goSetting');
             if (settingBtn) {
                 settingBtn.addEventListener('click', () => {
                     const sp = document.getElementById('page-setting');
                     const dp = document.getElementById('page-display');
                     const ap = document.getElementById('page-announce');
-                    if (sp.classList.contains("active") || dp.classList.contains("active") || ap.classList.contains("active")) {
-                        switchMainView("page-home");
-                    } else {
+                    
+                    if (sp.classList.contains("active")) {
+                        animatePageToButton(settingBtn, 'page-setting');
+                    } else if (dp.classList.contains("active")) {
                         switchMainView("page-setting");
+                    } else if (ap.classList.contains("active")) {
+                        switchMainView("page-setting");
+                    } else {
+                        animateButtonToPage(settingBtn, 'page-setting');
                     }
                 });
             }
 
-            // ---- 左上角返回箭头 ----
             const backBtn = document.getElementById('backBtn');
             if (backBtn) {
                 backBtn.addEventListener('click', () => {
@@ -620,14 +619,13 @@
                     if (dp.classList.contains("active")) {
                         switchMainView("page-setting");
                     } else if (ap.classList.contains("active")) {
-                        switchMainView("page-home");
+                        animatePageToButton(declareBtn, 'page-announce');
                     } else if (sp.classList.contains("active")) {
-                        switchMainView("page-home");
+                        animatePageToButton(settingBtn, 'page-setting');
                     }
                 });
             }
 
-            // ---- 进入画面设置 ----
             let displayTipShown = false;
             const goDisplayBtn = document.getElementById('goDisplay');
             if (goDisplayBtn) {
@@ -640,7 +638,6 @@
                 });
             }
 
-            // ---- 恢复默认 ----
             const resetBtn = document.getElementById('resetDefault');
             if (resetBtn) resetBtn.addEventListener('click', () => {
                 Object.assign(config, DEFAULT_CONFIG);
@@ -661,10 +658,9 @@
                 if (inpMusicVol && valMusicVol) { inpMusicVol.value = config.musicVol; valMusicVol.textContent = config.musicVol; updateSliderFill(inpMusicVol); }
                 applyVolume();
                 applyBackground("#ffffff");
-                updateCardStyle(); updatePageTrans(); updateBubbleSize(); restartBubbleAnim();
+                updateCardStyle(); updateBubbleSize(); restartBubbleAnim();
             });
 
-            // ---- 音乐开关 ----
             const musicToggle = document.getElementById('musicToggle');
             if (musicToggle) {
                 musicToggle.addEventListener('click', () => {
@@ -674,7 +670,6 @@
                 });
             }
 
-            // ---- 背景切换 ----
             const toggleBg = document.getElementById('toggleBg');
             if (toggleBg) {
                 toggleBg.addEventListener('click', () => {
@@ -683,15 +678,13 @@
                 });
             }
 
-            // ---- 首次提示 & 3秒后音乐提示 ----
             setTimeout(() => {
-                alert('音乐已经默认开启，可到右上角设置关闭');
+                alert('记得看右上角的设置按钮啊！！！');
                 setTimeout(() => {
-                    alert('ERROR:\n Can Not Find Music Resources');
+                    alert('音乐已经默认开启，可到右上角设置关闭');
                 }, 3000);
             }, 100);
 
-            // ---- 初始化 ----
             initBubbles();
             initSliders();
             applyBackground("#ffffff");
@@ -699,14 +692,17 @@
             applyVolume();
             playMusic();
 
+            document.addEventListener('pointerup', resumeBubbleAnim);
+            document.addEventListener('pointercancel', resumeBubbleAnim);
+
             window.addEventListener('resize', () => {
-                document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
+                document.querySelectorAll('input[type="range"]').forEach(inp => {
+                    inp._trackWidth = 0;
+                    updateSliderFill(inp);
+                });
             });
         });
 
-        // ============================================================
-        // 核心配置与状态
-        // ============================================================
         const paramsMeta = {
             bgAlpha: { min: 0, max: 1, fixed: 2 },
             shadowAlpha: { min: 0.01, max: 1, fixed: 2 },
@@ -717,44 +713,337 @@
 
         const DEFAULT_CONFIG = {
             bgAlpha: 0.20, shadowAlpha: 0.06, scaleMin: 1, scaleMax: 2.5,
-            transRange: 30, bubbleSize: 50, bubbleSec: 1, pageTransSec: 0.3, bgColor: "#ffffff", 
-            musicVol: 100
+            transRange: 30, bubbleSize: 50, bubbleSec: 1, 
+            pageTransSec: 0.6,  // 默认时长从 0.3s 改为 0.6s，让动画清晰可见
+            bgColor: "#ffffff", musicVol: 100
         };
         const config = { ...DEFAULT_CONFIG };
 
         const allViews = document.querySelectorAll(".view-page");
-        const allCards = document.querySelectorAll(".card");
         const bgWrap = document.querySelector(".bg-wrap");
         const audio = document.getElementById("bgMusic");
         const backBtn = document.getElementById('backBtn');
 
         let musicEnabled = true;
         let bubbleTimer = null;
+        let isDragging = false;
+        let animLock = false;
 
-        // ============================================================
-        // 页面切换
-        // ============================================================
-        function switchMainView(targetId) {
-            allViews.forEach(v => v.classList.remove("active"));
-            setTimeout(() => {
-                const el = document.getElementById(targetId);
-                if (el) el.classList.add("active");
-                if (backBtn) {
-                    if (targetId === "page-home") {
-                        backBtn.classList.remove("visible");
-                    } else {
-                        backBtn.classList.add("visible");
-                    }
-                }
-                setTimeout(() => {
-                    document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
-                }, 50);
-            }, config.pageTransSec * 1000);
+        function pauseBubbleAnim() {
+            if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
+            isDragging = true;
+        }
+        function resumeBubbleAnim() {
+            if (!isDragging) return;
+            isDragging = false;
+            setTimeout(() => { if (!isDragging) restartBubbleAnim(); }, 50);
         }
 
         // ============================================================
-        // 音乐控制
+        // 动画时序（提高最小值，确保动画清晰可见）
         // ============================================================
+        function getAnimTiming() {
+            // 把滑块值(0~2.5s)映射到 500ms ~ 2500ms 的实际动画时长
+            // 默认 0.6s → 600ms（morph 330ms + colorFade 150ms + fadeIn 120ms）
+            const rawMs = config.pageTransSec * 1000;
+            const totalMs = Math.min(Math.max(rawMs, 500), 2500);
+            return {
+                total: totalMs,
+                morph: Math.round(totalMs * 0.55),
+                colorFade: Math.round(totalMs * 0.25),
+                fadeIn: Math.round(totalMs * 0.20)
+            };
+        }
+
+        function getBtnRadius(btn, btnRect) {
+            const computed = getComputedStyle(btn).borderRadius;
+            if (computed.includes('%')) {
+                return btnRect.width / 2;
+            }
+            return parseFloat(computed) || 0;
+        }
+
+        function getButtonColor(btn) {
+            const style = getComputedStyle(btn);
+            return style.backgroundColor;
+        }
+
+        function saveCardVisual(card) {
+            return {
+                background: card.style.background,
+                border: card.style.border,
+                backdropFilter: card.style.backdropFilter,
+                webkitBackdropFilter: card.style.webkitBackdropFilter,
+                boxShadow: card.style.boxShadow
+            };
+        }
+        function hideCardVisual(card) {
+            card.style.background = 'transparent';
+            card.style.border = '1px solid transparent';
+            card.style.backdropFilter = 'none';
+            card.style.webkitBackdropFilter = 'none';
+            card.style.boxShadow = 'none';
+        }
+        function restoreCardVisual(card, saved) {
+            card.style.background = saved.background;
+            card.style.border = saved.border;
+            card.style.backdropFilter = saved.backdropFilter;
+            card.style.webkitBackdropFilter = saved.webkitBackdropFilter;
+            card.style.boxShadow = saved.boxShadow;
+        }
+
+        // ============================================================
+        // 按钮 → 页面
+        // ============================================================
+        function animateButtonToPage(btn, targetPageId) {
+            if (animLock) return;
+            animLock = true;
+
+            const ball = document.getElementById('morphBall');
+            const home = document.getElementById('page-home');
+            const targetPage = document.getElementById(targetPageId);
+            const targetCard = targetPage.querySelector('.card');
+            const contents = Array.from(targetCard.children);
+
+            const btnRect = btn.getBoundingClientRect();
+            const cardRect = targetCard.getBoundingClientRect();
+            const timing = getAnimTiming();
+            const btnColor = getButtonColor(btn);
+
+            const btnRadius = getBtnRadius(btn, btnRect);
+            const cardRadius = 28;
+
+            pauseBubbleAnim();
+
+            home.style.transition = `opacity ${Math.round(timing.morph * 0.5)}ms ease`;
+            home.style.opacity = '0';
+            btn.classList.add('anim-hidden');
+
+            targetPage.classList.add('active');
+            targetPage.style.opacity = '1';
+            targetPage.style.pointerEvents = 'none';
+            targetPage.style.zIndex = '3';
+            const savedCardVisual = saveCardVisual(targetCard);
+            hideCardVisual(targetCard);
+            contents.forEach(el => {
+                el.style.transition = 'none';
+                el.style.opacity = '0';
+            });
+
+            ball.style.setProperty('--morph-color', btnColor);
+            ball.style.setProperty('--fade-duration', '0ms');
+            ball.classList.remove('fade-color');
+            ball.style.display = 'block';
+            ball.style.transition = 'none';
+            ball.style.top = btnRect.top + 'px';
+            ball.style.left = btnRect.left + 'px';
+            ball.style.width = btnRect.width + 'px';
+            ball.style.height = btnRect.height + 'px';
+            ball.style.borderRadius = btnRadius + 'px';
+
+            ball.style.willChange = 'width, height, top, left, border-radius';
+
+            void ball.offsetWidth;
+
+            // 阶段 1：变形
+            requestAnimationFrame(() => {
+                ball.style.transition = `top ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), left ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), width ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), height ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), border-radius ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+                ball.style.top = cardRect.top + 'px';
+                ball.style.left = cardRect.left + 'px';
+                ball.style.width = cardRect.width + 'px';
+                ball.style.height = cardRect.height + 'px';
+                ball.style.borderRadius = cardRadius + 'px';
+            });
+
+            // 阶段 2：颜色褪去
+            setTimeout(() => {
+                ball.style.setProperty('--fade-duration', timing.colorFade + 'ms');
+                ball.classList.add('fade-color');
+
+                // 阶段 3：内容浮现
+                setTimeout(() => {
+                    ball.style.display = 'none';
+                    ball.style.willChange = '';
+                    ball.classList.remove('fade-color');
+
+                    restoreCardVisual(targetCard, savedCardVisual);
+
+                    contents.forEach(el => {
+                        el.style.transition = `opacity ${timing.fadeIn}ms ease`;
+                        el.style.opacity = '1';
+                    });
+
+                    setTimeout(() => {
+                        targetPage.style.pointerEvents = 'auto';
+                        targetPage.style.zIndex = '';
+                        home.classList.remove('active');
+                        home.style.opacity = '';
+                        home.style.transition = '';
+                        contents.forEach(el => {
+                            el.style.transition = '';
+                            el.style.opacity = '';
+                        });
+
+                        if (backBtn) backBtn.classList.add('visible');
+                        animLock = false;
+                        resumeBubbleAnim();
+
+                        requestAnimationFrame(() => {
+                            targetPage.querySelectorAll('input[type="range"]').forEach(inp => {
+                                inp._trackWidth = 0;
+                                updateSliderFill(inp);
+                            });
+                        });
+                    }, timing.fadeIn);
+                }, timing.colorFade);
+            }, timing.morph);
+        }
+
+        // ============================================================
+        // 页面 → 按钮
+        // ============================================================
+        function animatePageToButton(btn, sourcePageId) {
+            if (animLock) return;
+            animLock = true;
+
+            const ball = document.getElementById('morphBall');
+            const home = document.getElementById('page-home');
+            const sourcePage = document.getElementById(sourcePageId);
+            const sourceCard = sourcePage.querySelector('.card');
+            const contents = Array.from(sourceCard.children);
+
+            const btnRect = btn.getBoundingClientRect();
+            const cardRect = sourceCard.getBoundingClientRect();
+            const timing = getAnimTiming();
+            const btnColor = getButtonColor(btn);
+
+            const btnRadius = getBtnRadius(btn, btnRect);
+            const cardRadius = 28;
+
+            pauseBubbleAnim();
+
+            contents.forEach(el => {
+                el.style.transition = `opacity ${timing.fadeIn}ms ease`;
+                el.style.opacity = '0';
+            });
+
+            if (backBtn) backBtn.classList.remove('visible');
+
+            setTimeout(() => {
+                const savedCardVisual = saveCardVisual(sourceCard);
+                hideCardVisual(sourceCard);
+
+                ball.style.setProperty('--morph-color', btnColor);
+                ball.style.setProperty('--fade-duration', '0ms');
+                ball.classList.remove('fade-color');
+                ball.style.display = 'block';
+                ball.style.transition = 'none';
+                ball.style.top = cardRect.top + 'px';
+                ball.style.left = cardRect.left + 'px';
+                ball.style.width = cardRect.width + 'px';
+                ball.style.height = cardRect.height + 'px';
+                ball.style.borderRadius = cardRadius + 'px';
+                ball.style.willChange = 'width, height, top, left, border-radius';
+
+                void ball.offsetWidth;
+
+                requestAnimationFrame(() => {
+                    ball.style.transition = `top ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), left ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), width ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), height ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), border-radius ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+                    ball.style.top = btnRect.top + 'px';
+                    ball.style.left = btnRect.left + 'px';
+                    ball.style.width = btnRect.width + 'px';
+                    ball.style.height = btnRect.height + 'px';
+                    ball.style.borderRadius = btnRadius + 'px';
+                });
+
+                sourcePage.style.transition = `opacity ${timing.morph}ms ease`;
+                sourcePage.style.opacity = '0';
+
+                setTimeout(() => {
+                    ball.style.display = 'none';
+                    ball.style.willChange = '';
+                    btn.classList.remove('anim-hidden');
+                    restoreCardVisual(sourceCard, savedCardVisual);
+
+                    home.classList.add('active');
+                    home.style.transition = 'none';
+                    home.style.opacity = '0';
+                    void home.offsetWidth;
+                    home.style.transition = `opacity ${timing.fadeIn}ms ease`;
+                    home.style.opacity = '1';
+
+                    setTimeout(() => {
+                        sourcePage.classList.remove('active');
+                        sourcePage.style.transition = '';
+                        sourcePage.style.opacity = '';
+                        sourcePage.style.pointerEvents = '';
+                        contents.forEach(el => {
+                            el.style.transition = '';
+                            el.style.opacity = '';
+                        });
+                        home.style.transition = '';
+                        home.style.opacity = '';
+
+                        animLock = false;
+                        resumeBubbleAnim();
+                    }, timing.fadeIn);
+                }, timing.morph);
+            }, timing.fadeIn);
+        }
+
+        // ============================================================
+        // 普通页面切换（提高最小时长）
+        // ============================================================
+        function switchMainView(targetId) {
+            const currentActive = document.querySelector('.view-page.active');
+            const targetEl = document.getElementById(targetId);
+            if (currentActive === targetEl) return;
+
+            pauseBubbleAnim();
+
+            // 最小时长从 200ms 提高到 400ms
+            const duration = Math.min(Math.max(config.pageTransSec * 1000, 400), 1500);
+
+            if (currentActive) {
+                currentActive.style.transition = `opacity ${duration}ms ease`;
+                currentActive.style.opacity = '0';
+                currentActive.classList.remove('active');
+                currentActive.style.pointerEvents = 'none';
+                setTimeout(() => {
+                    currentActive.style.opacity = '';
+                    currentActive.style.transition = '';
+                }, duration);
+            }
+
+            targetEl.style.transition = 'none';
+            targetEl.style.opacity = '0';
+            targetEl.classList.add('active');
+            targetEl.style.pointerEvents = 'auto';
+            void targetEl.offsetWidth;
+            targetEl.style.transition = `opacity ${duration}ms ease`;
+            targetEl.style.opacity = '1';
+
+            setTimeout(() => {
+                targetEl.style.transition = '';
+                targetEl.style.opacity = '';
+                requestAnimationFrame(() => {
+                    targetEl.querySelectorAll('input[type="range"]').forEach(inp => {
+                        inp._trackWidth = 0;
+                        updateSliderFill(inp);
+                    });
+                });
+                resumeBubbleAnim();
+            }, duration);
+
+            if (backBtn) {
+                if (targetId === 'page-home') {
+                    backBtn.classList.remove('visible');
+                } else {
+                    backBtn.classList.add('visible');
+                }
+            }
+        }
+
         function updateMusicButton() {
             const btn = document.getElementById('musicToggle');
             if (!btn) return;
@@ -789,9 +1078,6 @@
             updateMusicButton();
         });
 
-        // ============================================================
-        // 泡泡动画
-        // ============================================================
         function updateBubbleDuration() {
             document.documentElement.style.setProperty('--bubble-duration', config.bubbleSec + 's');
         }
@@ -819,14 +1105,11 @@
             restartBubbleAnim();
         }
 
-        // ============================================================
-        // 卡片样式
-        // ============================================================
         function updateCardStyle() {
             const bg = `rgba(255,255,255,${config.bgAlpha})`;
             const filter = `blur(38px) saturate(60%)`;
             const shadow = `0 8px 32px rgba(0,0,0,${config.shadowAlpha})`;
-            allCards.forEach(card => {
+            document.querySelectorAll('.view-page.active .card').forEach(card => {
                 card.style.background = bg;
                 card.style.border = `1px solid ${bg}`;
                 card.style.backdropFilter = filter;
@@ -835,17 +1118,10 @@
             });
         }
 
-        function updatePageTrans() {
-            allViews.forEach(p => { p.style.transition = `opacity ${config.pageTransSec}s ease, transform ${config.pageTransSec}s ease`; });
-        }
-
         function updateBubbleSize() {
             document.querySelectorAll(".bubble").forEach(bub => { bub.style.setProperty('--bubble-size', config.bubbleSize + '%'); });
         }
 
-        // ============================================================
-        // 背景应用
-        // ============================================================
         function applyBackground(color) {
             config.bgColor = color;
             bgWrap.style.background = color;
@@ -858,13 +1134,13 @@
                 if (toggleBg) toggleBg.className = "btn-white";
             }
             requestAnimationFrame(() => {
-                document.querySelectorAll('input[type="range"]').forEach(inp => updateSliderFill(inp));
+                document.querySelectorAll('input[type="range"]').forEach(inp => {
+                    inp._trackWidth = 0;
+                    updateSliderFill(inp);
+                });
             });
         }
 
-        // ============================================================
-        // 滑块逻辑
-        // ============================================================
         function updateSliderFill(slider) {
             if (!slider) return;
             const min = parseFloat(slider.min);
@@ -873,7 +1149,14 @@
             const percent = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
 
             const thumbWidth = 22;
-            const trackWidth = slider.offsetWidth;
+            
+            let trackWidth = slider._trackWidth;
+            if (!trackWidth || trackWidth === 0) {
+                trackWidth = slider.offsetWidth;
+                if (trackWidth > 0) {
+                    slider._trackWidth = trackWidth;
+                }
+            }
 
             let visualPercent = percent;
             if (trackWidth > 0) {
@@ -890,69 +1173,160 @@
             }
         }
 
-        function initSliders() {
-            function bindSlider(inpId, valId, cfgKey, formatFn) {
-                const inp = document.getElementById(inpId);
-                const valSpan = document.getElementById(valId);
-                if (!inp || !valSpan) return;
-                inp.addEventListener("input", () => {
-                    const val = Number(inp.value);
-                    config[cfgKey] = val;
-                    valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2);
+        function bindSlider(inpId, valId, cfgKey, formatFn) {
+            const inp = document.getElementById(inpId);
+            const valSpan = document.getElementById(valId);
+            if (!inp || !valSpan) return;
+            
+            const isOnThumb = (clientX) => {
+                const rect = inp.getBoundingClientRect();
+                const x = clientX - rect.left;
+                const min = parseFloat(inp.min);
+                const max = parseFloat(inp.max);
+                const val = parseFloat(inp.value);
+                const percent = (val - min) / (max - min);
+                const thumbWidth = 22;
+                const thumbLeft = (rect.width - thumbWidth) * percent;
+                return x >= thumbLeft - 10 && x <= thumbLeft + thumbWidth + 10;
+            };
+            
+            let touchingSlot = false;
+            let savedValue = null;
+            
+            const onPointerDown = (e) => {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                if (!isOnThumb(clientX)) {
+                    touchingSlot = true;
+                    savedValue = inp.value;
+                }
+                pauseBubbleAnim();
+            };
+            
+            inp.addEventListener('pointerdown', onPointerDown);
+            inp.addEventListener('touchstart', onPointerDown, { passive: true });
+            inp.addEventListener('mousedown', onPointerDown);
+            
+            const clearTouch = () => {
+                touchingSlot = false;
+                savedValue = null;
+            };
+            document.addEventListener('pointerup', clearTouch);
+            document.addEventListener('pointercancel', clearTouch);
+            
+            let rafPending = false;
+            inp.addEventListener("input", () => {
+                if (touchingSlot && savedValue !== null) {
+                    inp.value = savedValue;
                     updateSliderFill(inp);
-
-                    if (cfgKey === 'bubbleSec') restartBubbleAnim();
-                    else if (cfgKey === 'pageTransSec') updatePageTrans();
-                    else if (cfgKey === 'bubbleSize') updateBubbleSize();
-                    else updateCardStyle();
-                });
+                    return;
+                }
+                
+                const val = Number(inp.value);
+                config[cfgKey] = val;
+                valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2);
                 updateSliderFill(inp);
-            }
+                
+                if (!rafPending) {
+                    rafPending = true;
+                    requestAnimationFrame(() => {
+                        rafPending = false;
+                        if (cfgKey === 'bubbleSec') restartBubbleAnim();
+                        else if (cfgKey === 'bubbleSize') updateBubbleSize();
+                        else if (cfgKey === 'musicVol') applyVolume();
+                        else updateCardStyle();
+                    });
+                }
+            });
+            
+            updateSliderFill(inp);
+        }
 
+        function initSliders() {
             bindSlider("inpBgAlpha", "valBgAlpha", "bgAlpha", v => v.toFixed(2));
             bindSlider("inpShadow", "valShadow", "shadowAlpha", v => v.toFixed(2));
             bindSlider("inpTrans", "valTrans", "transRange", v => v.toFixed(0));
             bindSlider("inpBubbleSize", "valBubbleSize", "bubbleSize", v => v.toFixed(1));
             bindSlider("inpBubbleTime", "valBubbleTime", "bubbleSec", v => v.toFixed(2));
             bindSlider("inpPageTrans", "valPageTrans", "pageTransSec", v => v.toFixed(2));
+            bindSlider("inpMusicVol", "valMusicVol", "musicVol", v => v.toFixed(0));
 
-            // 音量滑块
-            const inpMusicVol = document.getElementById("inpMusicVol");
-            const valMusicVol = document.getElementById("valMusicVol");
-            if (inpMusicVol && valMusicVol) {
-                inpMusicVol.addEventListener("input", () => {
-                    const v = Number(inpMusicVol.value);
-                    config.musicVol = v;
-                    valMusicVol.textContent = v;
-                    applyVolume();
-                    updateSliderFill(inpMusicVol);
-                });
-                updateSliderFill(inpMusicVol);
-            }
-
-            // 缩放双滑块
             const inpScaleMin = document.getElementById("inpScaleMin");
             const inpScaleMax = document.getElementById("inpScaleMax");
             const valScaleMin = document.getElementById("valScaleMin");
             const valScaleMax = document.getElementById("valScaleMax");
 
             if (inpScaleMin && inpScaleMax && valScaleMin && valScaleMax) {
-                function refreshScale() {
-                    let min = Number(inpScaleMin.value);
-                    let max = Number(inpScaleMax.value);
-                    if (min >= max) min = Number((max - 0.001).toFixed(3));
-                    config.scaleMin = min; config.scaleMax = max;
-                    valScaleMin.textContent = min.toFixed(1);
-                    valScaleMax.textContent = max.toFixed(1);
-                    updateSliderFill(inpScaleMin); updateSliderFill(inpScaleMax);
-                }
-                inpScaleMin.addEventListener("input", refreshScale);
-                inpScaleMax.addEventListener("input", refreshScale);
-                updateSliderFill(inpScaleMin);
-                updateSliderFill(inpScaleMax);
+                const bindScaleSlider = (inp, isMin) => {
+                    const isOnThumb = (clientX) => {
+                        const rect = inp.getBoundingClientRect();
+                        const x = clientX - rect.left;
+                        const min = parseFloat(inp.min);
+                        const max = parseFloat(inp.max);
+                        const val = parseFloat(inp.value);
+                        const percent = (val - min) / (max - min);
+                        const thumbWidth = 22;
+                        const thumbLeft = (rect.width - thumbWidth) * percent;
+                        return x >= thumbLeft - 10 && x <= thumbLeft + thumbWidth + 10;
+                    };
+                    
+                    let touchingSlot = false;
+                    let savedValue = null;
+                    
+                    const onPointerDown = (e) => {
+                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                        if (!isOnThumb(clientX)) {
+                            touchingSlot = true;
+                            savedValue = inp.value;
+                        }
+                        pauseBubbleAnim();
+                    };
+                    
+                    inp.addEventListener('pointerdown', onPointerDown);
+                    inp.addEventListener('touchstart', onPointerDown, { passive: true });
+                    inp.addEventListener('mousedown', onPointerDown);
+                    
+                    document.addEventListener('pointerup', () => {
+                        touchingSlot = false;
+                        savedValue = null;
+                    });
+                    document.addEventListener('pointercancel', () => {
+                        touchingSlot = false;
+                        savedValue = null;
+                    });
+                    
+                    inp.addEventListener("input", () => {
+                        if (touchingSlot && savedValue !== null) {
+                            inp.value = savedValue;
+                            updateSliderFill(inp);
+                            return;
+                        }
+                        
+                        let min = Number(inpScaleMin.value);
+                        let max = Number(inpScaleMax.value);
+                        if (min >= max) {
+                            if (isMin) {
+                                min = Number((max - 0.001).toFixed(3));
+                                inp.value = min;
+                            } else {
+                                max = Number((min + 0.001).toFixed(3));
+                                inp.value = max;
+                            }
+                        }
+                        config.scaleMin = min;
+                        config.scaleMax = max;
+                        valScaleMin.textContent = min.toFixed(1);
+                        valScaleMax.textContent = max.toFixed(1);
+                        updateSliderFill(inpScaleMin);
+                        updateSliderFill(inpScaleMax);
+                    });
+                    
+                    updateSliderFill(inp);
+                };
+                
+                bindScaleSlider(inpScaleMin, true);
+                bindScaleSlider(inpScaleMax, false);
             }
 
-            // 数值点击编辑
             document.querySelectorAll('[data-key]').forEach(span => bindEditEvent(span));
 
             function bindEditEvent(span) {
@@ -995,8 +1369,8 @@
                             if (vEl) vEl.textContent = config.scaleMin.toFixed(paramsMeta.scaleMin.fixed);
                         }
                         if (key === 'bubbleSec') restartBubbleAnim();
-                        else if (key === 'pageTransSec') updatePageTrans();
                         else if (key === 'bubbleSize') updateBubbleSize();
+                        else if (key === 'musicVol') applyVolume();
                         else updateCardStyle();
                     };
                     input.addEventListener('blur', commit);
