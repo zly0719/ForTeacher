@@ -1,1386 +1,740 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>极简跳转</title>
-    <style>
-        * {
-            box-sizing: border-box;
-            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-            margin: 0;
-            padding: 0;
-            -webkit-tap-highlight-color: transparent;
-        }
-        :root {
-            --bubble-duration: 1s;
-        }
-        body {
-            height: 100vh;
-            padding: 40px 20px;
-            text-align: center;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #ffffff;
-        }
-        .bg-wrap {
-            position: fixed;
-            inset: 0;
-            z-index: -1;
-            background: #ffffff;
-            transition: background 0.3s ease;
-            overflow: hidden;
-        }
-        body.bg-black .bg-wrap {
-            background: #000000;
-        }
-        .bubble {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            --bubble-size: 50%;
-            will-change: transform;
-            transform: translate3d(0, 0, 0);
-            backface-visibility: hidden;
-            transition: transform var(--bubble-duration) ease-in-out;
-        }
-        .bubble:nth-child(1) { background: radial-gradient(circle, rgba(255, 180, 210, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(2) { background: radial-gradient(circle, rgba(160, 210, 255, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(3) { background: radial-gradient(circle, rgba(210, 180, 255, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(4) { background: radial-gradient(circle, rgba(255, 235, 180, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(5) { background: radial-gradient(circle, rgba(180, 255, 210, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(6) { background: radial-gradient(circle, rgba(255, 120, 180, 0.55), transparent var(--bubble-size)); }
-        .bubble:nth-child(7) { background: radial-gradient(circle, rgba(120, 220, 255, 0.55), transparent var(--bubble-size)); }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title> </title>
+<style>
+:root { 
+    --bubble-duration: 1s; 
+    --card-bg: rgba(255, 255, 255, 0.20);
+    --card-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+}
+* { box-sizing: border-box; font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+body { height: 100vh; padding: 40px 20px; text-align: center; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #ffffff; }
+.bg-wrap { position: fixed; inset: 0; z-index: -1; background: #ffffff; transition: background 0.3s ease; overflow: hidden; }
+body.bg-black .bg-wrap { background: #000000; }
+.bubble { position: absolute; width: 100%; height: 100%; --bubble-size: 50%; will-change: transform; transform: translate3d(0,0,0); backface-visibility: hidden; transition: transform var(--bubble-duration) ease-in-out; }
+.bubble:nth-child(1) { background: radial-gradient(circle, rgba(255, 180, 210, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(2) { background: radial-gradient(circle, rgba(160, 210, 255, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(3) { background: radial-gradient(circle, rgba(210, 180, 255, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(4) { background: radial-gradient(circle, rgba(255, 235, 180, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(5) { background: radial-gradient(circle, rgba(180, 255, 210, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(6) { background: radial-gradient(circle, rgba(255, 120, 180, 0.55), transparent var(--bubble-size)); }
+.bubble:nth-child(7) { background: radial-gradient(circle, rgba(120, 220, 255, 0.55), transparent var(--bubble-size)); }
 
-        .view-page {
-            max-width: 440px;
-            width: 100%;
-            margin: 0 auto;
-            position: absolute;
-            left: 0;
-            right: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            opacity: 0;
-            pointer-events: none;
-            z-index: 1;
-            will-change: opacity;
-        }
-        .view-page.active {
-            opacity: 1;
-            pointer-events: auto;
-            z-index: 2;
-        }
+.view-page { max-width: 440px; width: 100%; margin: 0 auto; position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); opacity: 0; pointer-events: none; z-index: 1; will-change: opacity; }
+.view-page.active { opacity: 1; pointer-events: auto; z-index: 2; }
 
-        .card {
-            background: rgba(255, 255, 255, 0.20);
-            border: 1px solid rgba(255, 255, 255, 0.20);
-            border-radius: 28px;
-            padding: 40px 30px;
-            backdrop-filter: blur(38px) saturate(60%);
-            -webkit-backdrop-filter: blur(38px) saturate(60%);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06);
-            transition: background 0.3s ease, border-color 0.3s ease;
-        }
-        .title {
-            font-size: 26px;
-            color: #111111;
-            margin-bottom: 36px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
-        }
-        body.bg-black .title { color: #ffffff; }
-        .col-center {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 22px;
-        }
+.card { background: var(--card-bg); border: 1px solid var(--card-bg); border-radius: 28px; padding: 40px 30px; box-shadow: var(--card-shadow); transition: background 0.3s ease, border-color 0.3s ease; }
+.card.no-glass { background: transparent !important; border-color: transparent !important; box-shadow: none !important; }
 
-        .btn-jump,
-        .btn-declare {
-            background: #3B82F6;
-            color: #ffffff;
-            border: none;
-            border-radius: 24px;
-            padding: 24px 32px;
-            font-size: 24px;
-            font-weight: 600;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.25s ease;
-            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.35);
-            letter-spacing: 1px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            position: relative;
-            overflow: hidden;
-            -webkit-touch-callout: none;
-            user-select: none;
-        }
-        .btn-jump:active,
-        .btn-declare:active {
-            transform: scale(0.96);
-            box-shadow: 0 4px 16px rgba(59, 130, 246, 0.25);
-        }
-        .btn-jump .arrow {
-            display: inline-block;
-            transition: transform 0.25s ease;
-        }
-        .btn-jump:hover .arrow {
-            transform: translateX(6px);
-        }
+.title { font-size: 26px; color: #111111; margin-bottom: 36px; font-weight: 500; letter-spacing: 0.5px; }
+.title:empty { display: none; }
+.title:empty + * { margin-top: -10px; } 
 
-        .setting-btn {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            color: #111111;
-            font-size: 22px;
-            cursor: pointer;
-            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.15s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-            -webkit-touch-callout: none;
-            user-select: none;
-        }
-        .setting-btn:active { transform: scale(0.92); }
-        body.bg-black .setting-btn {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.18);
-            color: #ffffff;
-        }
-        .setting-btn.anim-hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
+body.bg-black .title { color: #ffffff; }
+.col-center { display: flex; flex-direction: column; align-items: center; gap: 22px; }
 
-        .morph-ball {
-            position: fixed;
-            z-index: 10000;
-            display: none;
-            background: rgba(255, 255, 255, 0.30);
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.10);
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            pointer-events: none;
-            contain: layout style paint;
-            transform: translateZ(0);
-        }
-        .morph-ball::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: var(--morph-color, #3B82F6);
-            opacity: 1;
-            transition: opacity var(--fade-duration, 0ms) ease;
-            border-radius: inherit;
-            pointer-events: none;
-        }
-        .morph-ball.fade-color::before {
-            opacity: 0;
-        }
-        body.bg-black .morph-ball {
-            background: rgba(0, 0, 0, 0.35);
-            border-color: rgba(255, 255, 255, 0.15);
-        }
+.btn-custom { background: var(--btn-bg, #3B82F6); color: var(--btn-color, #ffffff); box-shadow: var(--card-shadow); border: none; border-radius: 24px; padding: 24px 32px; font-size: 24px; font-weight: 600; width: 100%; cursor: pointer; transition: 0.25s ease; letter-spacing: 1px; display: flex; align-items: center; justify-content: center; gap: 12px; position: relative; overflow: hidden; -webkit-touch-callout: none; user-select: none; }
+.btn-custom:active { transform: scale(0.96); }
+.btn-custom:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
 
-        .back-btn {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 9999;
-            width: 50px;
-            height: 50px;
-            border-radius: 50%;
-            background: rgba(0, 0, 0, 0.08);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
-            border: 1px solid rgba(0, 0, 0, 0.12);
-            color: #111111;
-            font-size: 24px;
-            cursor: pointer;
-            transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.25s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.10);
-            -webkit-touch-callout: none;
-            user-select: none;
-            opacity: 0;
-            pointer-events: none;
-        }
-        .back-btn.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .back-btn:active { transform: scale(0.92); }
-        body.bg-black .back-btn {
-            background: rgba(255, 255, 255, 0.22);
-            border-color: rgba(255, 255, 255, 0.18);
-            color: #ffffff;
-        }
+.btn-theme-1 { --btn-bg: #3B82F6; --btn-color: #ffffff; }
+.btn-theme-2 { --btn-bg: #ffffff; --btn-color: #111111; }
 
-        .set-card {
-            max-height: 78vh;
-            overflow-y: auto;
-            text-align: left;
-            position: relative;
-            scrollbar-width: none;
-            -ms-overflow-style: none;
-            -webkit-overflow-scrolling: touch;
-        }
-        .set-card::-webkit-scrollbar { display: none; }
-        .set-card .title { text-align: center; margin-bottom: 24px; }
+.setting-btn, .config-btn { position: fixed; top: 20px; z-index: 9999; width: 50px; height: 50px; border-radius: 50%; background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.2); color: #111111; font-size: 22px; cursor: pointer; transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.15s ease; display: flex; align-items: center; justify-content: center; box-shadow: var(--card-shadow); user-select: none; font-weight: bold; }
+.setting-btn:active, .config-btn:active { transform: scale(0.92); }
+body.bg-black .setting-btn, body.bg-black .config-btn { border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
+.setting-btn.anim-hidden, .config-btn.anim-hidden { opacity: 0; pointer-events: none; }
+.setting-btn { right: 20px; }
+.config-btn { right: 80px; font-size: 26px; }
 
-        .announce-content {
-            font-size: 15px;
-            line-height: 1.8;
-            color: #111111;
-            white-space: pre-wrap;
-            word-break: break-word;
-            transition: color 0.3s ease;
-        }
-        body.bg-black .announce-content { color: #ffffff; }
+.back-btn { position: fixed; top: 20px; left: 20px; z-index: 9999; width: 50px; height: 50px; border-radius: 50%; background: var(--card-bg); border: 1px solid rgba(255, 255, 255, 0.2); color: #111111; font-size: 24px; cursor: pointer; transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease, opacity 0.25s ease; display: flex; align-items: center; justify-content: center; box-shadow: var(--card-shadow); user-select: none; opacity: 0; pointer-events: none; }
+.back-btn.visible { opacity: 1; pointer-events: auto; }
+.back-btn:active { transform: scale(0.92); }
+body.bg-black .back-btn { border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
 
-        .slider-row { margin: 18px 0; }
-        .slider-row label {
-            display: block;
-            font-size: 14px;
-            margin-bottom: 8px;
-            color: #111111;
-            transition: color 0.3s ease;
-            font-weight: 450;
-        }
-        body.bg-black .slider-row label { color: #ffffff; }
+/* 气球动画元素 */
+.morph-ball { position: fixed; z-index: 100000; display: none; background: var(--card-bg); box-shadow: var(--card-shadow); border: 1px solid var(--card-bg); pointer-events: none; contain: layout style paint; transform: translateZ(0); }
+.morph-ball::before { content: ''; position: absolute; inset: 0; background: var(--morph-color, #3B82F6); opacity: 1; transition: opacity var(--fade-duration, 0ms) ease; border-radius: inherit; pointer-events: none; }
+.morph-ball.fade-color::before { opacity: 0; }
 
-        .slider-track {
-            position: relative;
-            width: 100%;
-            height: 24px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.08);
-            transition: background 0.3s ease;
-        }
-        body.bg-black .slider-track {
-            background: rgba(255, 255, 255, 0.15);
-        }
-        .slider-fill {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            width: 0%;
-            background: #1989fa;
-            border-radius: 999px;
-            pointer-events: none;
-            z-index: 1;
-        }
-        .slider-row input[type="range"] {
-            -webkit-appearance: none;
-            appearance: none;
-            position: relative;
-            z-index: 2;
-            width: 100%;
-            height: 22px;
-            margin-top: 1px;
-            border-radius: 999px;
-            outline: none;
-            cursor: pointer;
-            background: transparent;
-            box-sizing: border-box;
-            padding: 0;
-            border: none;
-            touch-action: pan-y;
-        }
-        .slider-row input[type="range"]::-webkit-slider-runnable-track {
-            height: 22px;
-            background: transparent;
-            border-radius: 999px;
-            border: none;
-        }
-        .slider-row input[type="range"]::-webkit-slider-thumb {
-            -webkit-appearance: none;
-            appearance: none;
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid #1989fa;
-            margin-top: 0;
-            position: relative;
-            z-index: 4;
-            box-sizing: border-box;
-        }
-        .slider-row input[type="range"]::-moz-range-thumb {
-            width: 22px;
-            height: 22px;
-            border-radius: 50%;
-            background: #ffffff;
-            border: 2px solid #1989fa;
-            box-sizing: border-box;
-        }
-        .slider-row input[type="range"]::-moz-range-track {
-            height: 22px;
-            background: transparent;
-            border-radius: 999px;
-            border: none;
-        }
-        .slider-row [data-key] {
-            cursor: text;
-            display: inline-block;
-            min-width: 36px;
-            text-align: center;
-            color: inherit;
-            font-weight: 500;
-        }
+.set-card { max-height: 78vh; overflow-y: auto; text-align: left; position: relative; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+.set-card::-webkit-scrollbar { display: none; }
+.set-card .title { text-align: center; margin-bottom: 24px; }
+.announce-content { font-size: 15px; line-height: 1.8; color: #111111; white-space: pre-wrap; word-break: break-word; text-align: left; }
+body.bg-black .announce-content { color: #ffffff; }
 
-        .music-row { margin: 6px 0 4px; }
-        .btn-toggle {
-            width: 100%;
-            padding: 18px 20px;
-            border-radius: 18px;
-            border: none;
-            font-size: 20px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: 0.25s;
-            background: #3B82F6;
-            color: #ffffff;
-            box-shadow: 0 8px 28px rgba(59, 130, 246, 0.35);
-            letter-spacing: 1px;
-        }
-        .btn-toggle:active { transform: scale(0.97); }
-        .btn-toggle.off {
-            background: rgba(0, 0, 0, 0.08);
-            color: #666666;
-            box-shadow: none;
-        }
-        body.bg-black .btn-toggle.off {
-            background: rgba(255, 255, 255, 0.12);
-            color: #aaaaaa;
-        }
+.slider-row { margin: 18px 0; }
+.slider-row label { display: block; font-size: 14px; margin-bottom: 8px; color: #111111; transition: color 0.3s ease; font-weight: 450; }
+body.bg-black .slider-row label { color: #ffffff; }
 
-        .btn-enter {
-            width: 100%;
-            padding: 18px 22px;
-            border-radius: 18px;
-            border: none;
-            font-size: 18px;
-            font-weight: 550;
-            cursor: pointer;
-            background: rgba(0, 0, 0, 0.06);
-            color: #111111;
-            transition: 0.2s;
-            margin: 18px 0 4px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            letter-spacing: 0.5px;
-        }
-        .btn-enter:active { transform: scale(0.97); }
-        body.bg-black .btn-enter {
-            background: rgba(255, 255, 255, 0.12);
-            color: #ffffff;
-        }
-        .btn-enter .chev { font-size: 20px; opacity: 0.6; }
+.slider-track { position: relative; width: 100%; height: 24px; border-radius: 999px; background: rgba(0, 0, 0, 0.08); transition: background 0.3s ease; }
+body.bg-black .slider-track { background: rgba(255, 255, 255, 0.15); }
+.slider-fill { position: absolute; left: 0; top: 0; height: 100%; width: 0%; background: #1989fa; border-radius: 999px; pointer-events: none; z-index: 1; }
+.slider-row input[type="range"] { -webkit-appearance: none; appearance: none; position: relative; z-index: 2; width: 100%; height: 22px; margin-top: 1px; border-radius: 999px; outline: none; cursor: pointer; background: transparent; padding: 0; border: none; touch-action: pan-y; }
+.slider-row input[type="range"]::-webkit-slider-runnable-track { height: 22px; background: transparent; border: none; }
+.slider-row input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 2px solid #1989fa; margin-top: 0; position: relative; z-index: 4; box-sizing: border-box; }
+.slider-row input[type="range"]::-moz-range-thumb { width: 22px; height: 22px; border-radius: 50%; background: #ffffff; border: 2px solid #1989fa; box-sizing: border-box; }
+.slider-row input[type="range"]::-moz-range-track { height: 22px; background: transparent; border: none; }
+.slider-row [data-key] { cursor: text; display: inline-block; min-width: 36px; text-align: center; color: inherit; font-weight: 500; }
 
-        .bg-switch { margin: 16px 0; display: flex; gap: 12px; }
-        .bg-switch button {
-            flex: 1;
-            padding: 10px;
-            border-radius: 14px;
-            border: none;
-            cursor: pointer;
-            font-size: 15px;
-            font-weight: 500;
-            transition: 0.2s;
-        }
-        .bg-switch button:active { transform: scale(0.96); }
-        .btn-black { background: #000000; color: #ffffff; }
-        .btn-white { background: #ffffff; color: #000000; }
+.music-row { margin: 6px 0 4px; }
+.btn-toggle { width: 100%; padding: 18px 20px; border-radius: 18px; border: none; font-size: 20px; font-weight: 600; cursor: pointer; transition: 0.25s; background: #3B82F6; color: #ffffff; box-shadow: var(--card-shadow); }
+.btn-toggle:active { transform: scale(0.97); }
+.btn-toggle.off { background: rgba(0, 0, 0, 0.08); color: #666666; box-shadow: none; }
+body.bg-black .btn-toggle.off { background: rgba(255, 255, 255, 0.12); color: #aaaaaa; }
 
-        .reset-btn { margin-top: 20px; }
-        .btn-gray {
-            background: rgba(0, 0, 0, 0.08);
-            color: #111111;
-            border: none;
-            border-radius: 20px;
-            padding: 16px 26px;
-            font-size: 18px;
-            width: 100%;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: 450;
-        }
-        .btn-gray:active { transform: scale(0.97); }
-        body.bg-black .btn-gray {
-            background: rgba(255, 255, 255, 0.25);
-            color: #ffffff;
-        }
+.btn-enter { width: 100%; padding: 18px 22px; border-radius: 18px; border: 1px solid rgba(255, 255, 255, 0.2); font-size: 18px; font-weight: 550; cursor: pointer; background: var(--card-bg); color: #111111; transition: 0.2s; margin: 18px 0 4px; display: flex; align-items: center; justify-content: space-between; box-shadow: var(--card-shadow); }
+.btn-enter:active { transform: scale(0.97); }
+body.bg-black .btn-enter { border-color: rgba(255, 255, 255, 0.1); color: #ffffff; }
+.btn-enter .chev { font-size: 20px; opacity: 0.6; }
 
-        @media (max-width: 480px) {
-            .card { padding: 30px 20px; }
-            .btn-jump, .btn-declare { font-size: 20px; padding: 20px 24px; }
-            .setting-btn, .back-btn { width: 44px; height: 44px; font-size: 18px; top: 14px; }
-            .setting-btn { right: 14px; }
-            .back-btn { left: 14px; }
-        }
-    </style>
+.btn-gray { width: 100%; padding: 18px 22px; border-radius: 18px; border: none; font-size: 18px; font-weight: 550; cursor: pointer; background: rgba(0, 0, 0, 0.06); color: #111111; transition: 0.2s; margin: 18px 0 4px; display: flex; align-items: center; justify-content: center; }
+.btn-gray:active { transform: scale(0.97); }
+body.bg-black .btn-gray { background: rgba(255, 255, 255, 0.12); color: #ffffff; }
+
+.bg-switch { margin: 16px 0; display: flex; gap: 12px; }
+.bg-switch button { flex: 1; padding: 10px; border-radius: 14px; border: none; cursor: pointer; font-size: 15px; font-weight: 500; transition: 0.2s; }
+.bg-switch button:active { transform: scale(0.96); }
+.btn-black { background: #000000; color: #ffffff; }
+.btn-white { background: #ffffff; color: #000000; }
+
+#page-config .card { display: flex; flex-direction: column; padding: 30px 20px; }
+#configTextarea {
+    width: 100%; height: 50vh; background: rgba(0, 0, 0, 0.05); border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 20px; padding: 16px; font-family: ui-monospace, SFMono-Regular, Consolas, monospace;
+    font-size: 14px; line-height: 1.5; color: #333; resize: none; outline: none; margin-bottom: 20px; text-align: left;
+}
+body.bg-black #configTextarea { background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.1); color: #eee; }
+#page-config .btn-custom { padding: 18px 22px; font-size: 18px; border-radius: 18px; margin-top: 0; margin-bottom: 12px; }
+#page-config .btn-gray { padding: 18px 22px; font-size: 18px; border-radius: 18px; margin: 0; }
+
+#page-error .card {
+    background: #ffffff !important; border: none; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    text-align: left; padding: 30px 20px; max-height: 78vh; overflow-y: auto;
+}
+#page-error .card h2 { color: #ff3b30; margin-bottom: 20px; font-size: 20px; text-align: center; }
+.error-code-box {
+    background: #f5f5f5; padding: 16px; border-radius: 12px; white-space: pre-wrap;
+    font-family: ui-monospace, SFMono-Regular, Consolas, monospace; font-size: 14px; color: #333;
+    border: 1px solid #ddd; margin-bottom: 20px; line-height: 1.6; word-break: break-all;
+}
+.error-code-box .highlight { color: #ff3b30; font-weight: bold; background: #ffe5e5; padding: 2px 6px; border-radius: 4px; display: inline-block; margin: 2px 0; }
+.error-list { color: #d32f2f; margin-bottom: 20px; line-height: 1.8; padding-left: 20px; font-size: 14px; }
+
+@media (max-width: 480px) {
+    .card { padding: 30px 20px; }
+    .btn-custom { font-size: 20px; padding: 20px 24px; }
+    .setting-btn, .config-btn, .back-btn { width: 44px; height: 44px; font-size: 18px; top: 14px; }
+    .setting-btn { right: 14px; } .back-btn { left: 14px; }
+    .config-btn { right: 68px; font-size: 22px; }
+    #page-config .card { padding: 20px 15px; }
+}
+</style>
 </head>
 <body>
-    <div class="bg-wrap">
-        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
-        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+
+<script id="default-config" type="text/plain">
+home:'1','2','3','16'
+'1':[type=page,color=ys_1,title=一些建议,subtitle=建议],'5','6'
+'2':[type=text,color=ys_1,title=周记],无
+'3':[type=page,color=ys_1,title=关于],'9','10'
+'5':[type=text,color=ys_1,title=关于打扫卫生],包干区卫生不是每次扫完都要找一个人倒垃圾，我的建议是倒垃圾的这个人固定下来(不参与扫地)，说实话包干区卫生我感觉两个人就够了，毕竟人太多剩下的人也只能划水(毕竟簸箕只有一个，而那些垃圾很难扫得动，只能等着拿着簸箕的人来扫)\n或者是直接把垃圾倒到楼上，每次扫完地回到教室，教室垃圾桶都没倒，还不如干脆直接到那里面省着跑
+'6':[type=text,color=ys_1,title=学习方面,subtitle=指英语],每次读单词都是只读三遍英文，高手时候看到这个单词，知道他怎么读，却不知道他是怎么译(这个我七八年级遇到过好几次)，所以我的建议是读大四的时候，两遍英文，一遍中文
+'9':[type=text,color=ys_1,title=更新公告],优化性能问题\n新增过渡动画\n新增简易编程\n修复42个已知问题(每增加一个新功能，都会出现几十个奇奇怪怪的问题，之前已经解决的挺多的，但是一直懒得更新)\n文件体积大幅缩小55.31kb→42.12kb加快加载速度
+'10':[type=page,color=ys_1,title=网站],'11','13'
+'11':[type=text,color=ys_1,title=起源],暑假的时候看到别人在微信群里面发一个HTML文件，应该发现是一个流星雨动画，我就想着我可以做一个整蛊人的HTML，也非常简单，当时我就想着能不能把他做的高级一些，然后就加功能\n这个网站是AI写的(毕竟我也没学过HTML，呃.....感觉有点奇怪)
+'13':[type=tp_web,color=#B80000,title=毁灭],https://b23.tv/snTFWPd
+'16':[type=page,color=ys_1,title=其他,subtitle=我的bilibili账号，可以加下我也可以给我发信息，我有时间的时候都会回(在电视上回)],'17'
+'17':[type=tp_web,color=ys_2,title=点击跳转],https://b23.tv/8RIFucU
+</script>
+
+<div class="bg-wrap">
+    <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+</div>
+
+<audio id="bgMusic" src="./music.mp3" preload="auto" loop></audio>
+<div class="morph-ball" id="morphBall"></div>
+
+<button class="back-btn" id="backBtn" aria-label="返回">←</button>
+<button class="config-btn" id="goConfig" aria-label="配置">!</button>
+<button class="setting-btn" id="goSetting" aria-label="设置">⚙</button>
+
+<div id="pages-container">
+    <div class="view-page" id="page-config">
+        <div class="card">
+            <textarea id="configTextarea" spellcheck="false" placeholder="在此输入配置..."></textarea>
+            <button class="btn-custom" id="applyConfig" style="--btn-bg: #3B82F6; --btn-color: #fff;">应用配置</button>
+            <button class="btn-gray" id="resetConfigDefault">恢复初始配置</button>
+        </div>
     </div>
 
-    <audio id="bgMusic" src="./music.mp3" preload="auto" loop></audio>
-
-    <div class="morph-ball" id="morphBall"></div>
-
-    <button class="back-btn" id="backBtn" aria-label="返回">←</button>
-    <button class="setting-btn" id="goSetting" aria-label="设置">⚙</button>
-
-    <div class="view-page active" id="page-home">
+    <div class="view-page" id="page-error">
         <div class="card">
-            <div class="title">✨ 欢迎</div>
-            <div class="col-center">
-                <button class="btn-declare" id="declareBtn">📄 声明</button>
-                <button class="btn-jump" id="jumpBtn">
-                    <span>立即前往</span>
-                    <span class="arrow">→</span>
-                </button>
-            </div>
+            <h2>⚠️ 配置解析出错</h2>
+            <div id="error-details"></div>
+            <button class="btn-custom" id="errBackBtn" style="--btn-bg: #3B82F6; --btn-color: #fff; margin-top: 10px;">清空错误配置并返回</button>
         </div>
     </div>
 
     <div class="view-page" id="page-setting">
         <div class="card set-card">
             <div class="title">⚙ 设置</div>
-
-            <div class="music-row">
-                <button id="musicToggle" class="btn-toggle">🎵 音乐：开启</button>
-            </div>
-
+            <div class="music-row"><button id="musicToggle" class="btn-toggle">🎵 音乐：开启</button></div>
             <div class="slider-row">
                 <label>音量 <span id="valMusicVol" data-key="musicVol">100</span>%</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillMusicVol"></div>
-                    <input type="range" min="0" max="100" step="1" id="inpMusicVol" value="100">
-                </div>
+                <div class="slider-track"><div class="slider-fill" id="fillMusicVol"></div><input type="range" min="0" max="100" step="1" id="inpMusicVol" value="100"></div>
             </div>
-
-            <button class="btn-enter" id="goDisplay">
-                <span>🎨 画面设置</span><span class="chev">›</span>
-            </button>
-
-            <div class="bg-switch">
-                <button id="toggleBg" class="btn-black">切换背景</button>
-            </div>
-
-            <div class="col-center reset-btn">
-                <button class="btn-gray" id="resetDefault">恢复默认</button>
-            </div>
+            <button class="btn-enter" id="goDisplay"><span>🎨 画面设置</span><span class="chev">›</span></button>
+            <div class="bg-switch"><button id="toggleBg" class="btn-black">切换背景</button></div>
+            <div class="col-center" style="margin-top:20px;"><button class="btn-gray" id="resetDefault">恢复默认设置</button></div>
         </div>
     </div>
 
     <div class="view-page" id="page-display">
         <div class="card set-card">
             <div class="title">🎨 画面设置</div>
-
             <div class="slider-row">
-                <label>毛玻璃不透明度 <span id="valBgAlpha" data-key="bgAlpha">0.20</span></label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillBgAlpha"></div>
-                    <input type="range" min="0" max="1" step="0.001" id="inpBgAlpha" value="0.20">
-                </div>
+                <label>背景不透明度 <span id="valBgAlpha" data-key="bgAlpha">0.20</span></label>
+                <div class="slider-track"><div class="slider-fill" id="fillBgAlpha"></div><input type="range" min="0" max="1" step="0.001" id="inpBgAlpha" value="0.20"></div>
             </div>
             <div class="slider-row">
-                <label>阴影透明度 (0.01~1.00) <span id="valShadow" data-key="shadowAlpha">0.06</span></label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillShadow"></div>
-                    <input type="range" min="0.01" max="1" step="0.001" id="inpShadow" value="0.06">
-                </div>
+                <label>阴影透明度 (0.01~1.00) <span id="valShadow" data-key="shadowAlpha">0.25</span></label>
+                <div class="slider-track"><div class="slider-fill" id="fillShadow"></div><input type="range" min="0.01" max="1" step="0.001" id="inpShadow" value="0.25"></div>
             </div>
             <div class="slider-row">
                 <label>泡泡缩放 scale (0.1~10) 最小: <span id="valScaleMin" data-key="scaleMin">1.0</span> &nbsp; 最大: <span id="valScaleMax" data-key="scaleMax">2.5</span></label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillScaleMin"></div>
-                    <input type="range" min="0.1" max="10" step="0.001" id="inpScaleMin" value="1">
-                </div>
-                <div class="slider-track" style="margin-top:10px;">
-                    <div class="slider-fill" id="fillScaleMax"></div>
-                    <input type="range" min="0.1" max="10" step="0.001" id="inpScaleMax" value="2.5">
-                </div>
+                <div class="slider-track"><div class="slider-fill" id="fillScaleMin"></div><input type="range" min="0.1" max="10" step="0.001" id="inpScaleMin" value="1"></div>
+                <div class="slider-track" style="margin-top:10px;"><div class="slider-fill" id="fillScaleMax"></div><input type="range" min="0.1" max="10" step="0.001" id="inpScaleMax" value="2.5"></div>
             </div>
             <div class="slider-row">
                 <label>translate 最大范围 (0%~300%) <span id="valTrans" data-key="transRange">30</span>%</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillTrans"></div>
-                    <input type="range" min="0" max="300" step="0.1" id="inpTrans" value="30">
-                </div>
+                <div class="slider-track"><div class="slider-fill" id="fillTrans"></div><input type="range" min="0" max="300" step="0.1" id="inpTrans" value="30"></div>
             </div>
             <div class="slider-row">
                 <label>泡泡大小 (0%~100%) <span id="valBubbleSize" data-key="bubbleSize">50</span>%</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillBubbleSize"></div>
-                    <input type="range" min="0" max="100" step="0.1" id="inpBubbleSize" value="50">
-                </div>
+                <div class="slider-track"><div class="slider-fill" id="fillBubbleSize"></div><input type="range" min="0" max="100" step="0.1" id="inpBubbleSize" value="50"></div>
             </div>
             <div class="slider-row">
                 <label>泡泡运动速度 (0.2~10s) <span id="valBubbleTime" data-key="bubbleSec">1.00</span>s</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillBubbleTime"></div>
-                    <input type="range" min="0.2" max="10" step="0.01" id="inpBubbleTime" value="1">
-                </div>
+                <div class="slider-track"><div class="slider-fill" id="fillBubbleTime"></div><input type="range" min="0.2" max="10" step="0.01" id="inpBubbleTime" value="1"></div>
             </div>
             <div class="slider-row">
-                <label>页面切换过渡时长 (0~2.5s) <span id="valPageTrans" data-key="pageTransSec">0.60</span>s</label>
-                <div class="slider-track">
-                    <div class="slider-fill" id="fillPageTrans"></div>
-                    <input type="range" min="0" max="2.5" step="0.001" id="inpPageTrans" value="0.6">
-                </div>
+                <label>页面切换过渡时长 (0~5s) <span id="valPageTrans" data-key="pageTransSec">0.60</span>s</label>
+                <div class="slider-track"><div class="slider-fill" id="fillPageTrans"></div><input type="range" min="0" max="5" step="0.001" id="inpPageTrans" value="0.6"></div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="view-page" id="page-announce">
-        <div class="card set-card">
-            <div class="title">📄 声明</div>
-            <div class="announce-content">在这里填写你的声明文字。
+<script>
+function tryParseConfig(text) {
+    const lines = text.split('\n');
+    const nodes = {}; let homeChildren = [], errors = [];
 
-你可以写多行，比如：
-1. 本页面仅为个人使用，不构成任何商业服务。
-2. 跳转链接的内容与本页面作者无关。
-3. 如有疑问，请联系作者。
+    lines.forEach(rawLine => {
+        let line = rawLine.trim();
+        if (!line || line.startsWith('//')) return;
 
-（把这段文字替换成你自己的内容即可）</div>
-        </div>
-    </div>
+        if (line.startsWith('home:')) {
+            const matches = line.substring(5).match(/'([^']+)'/g);
+            if (matches) homeChildren = matches.map(s => s.replace(/'/g, ''));
+            else errors.push({ line: rawLine, reason: 'home 后面必须跟用单引号包裹的变量' });
+            return;
+        }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const jumpBtn = document.getElementById('jumpBtn');
-            if (jumpBtn) {
-                jumpBtn.addEventListener('click', () => {
-                    const url = "https://www.bilibili.com";
-                    const win = window.open(url, "_blank");
-                    if (!win || win.closed || typeof win.closed === 'undefined') {
-                        window.location.href = url;
-                    }
-                });
-            }
+        const match = line.match(/^'([^']+)':\s*\[(.*?)\]\s*,\s*(.*)$/);
+        if (!match) { errors.push({ line: rawLine, reason: "格式错误" }); return; }
 
-            const declareBtn = document.getElementById('declareBtn');
-            if (declareBtn) {
-                declareBtn.addEventListener('click', () => {
-                    animateButtonToPage(declareBtn, 'page-announce');
-                });
-            }
-
-            const settingBtn = document.getElementById('goSetting');
-            if (settingBtn) {
-                settingBtn.addEventListener('click', () => {
-                    const sp = document.getElementById('page-setting');
-                    const dp = document.getElementById('page-display');
-                    const ap = document.getElementById('page-announce');
-                    
-                    if (sp.classList.contains("active")) {
-                        animatePageToButton(settingBtn, 'page-setting');
-                    } else if (dp.classList.contains("active")) {
-                        switchMainView("page-setting");
-                    } else if (ap.classList.contains("active")) {
-                        switchMainView("page-setting");
-                    } else {
-                        animateButtonToPage(settingBtn, 'page-setting');
-                    }
-                });
-            }
-
-            const backBtn = document.getElementById('backBtn');
-            if (backBtn) {
-                backBtn.addEventListener('click', () => {
-                    const dp = document.getElementById('page-display');
-                    const sp = document.getElementById('page-setting');
-                    const ap = document.getElementById('page-announce');
-                    if (dp.classList.contains("active")) {
-                        switchMainView("page-setting");
-                    } else if (ap.classList.contains("active")) {
-                        animatePageToButton(declareBtn, 'page-announce');
-                    } else if (sp.classList.contains("active")) {
-                        animatePageToButton(settingBtn, 'page-setting');
-                    }
-                });
-            }
-
-            let displayTipShown = false;
-            const goDisplayBtn = document.getElementById('goDisplay');
-            if (goDisplayBtn) {
-                goDisplayBtn.addEventListener('click', () => {
-                    if (!displayTipShown) {
-                        displayTipShown = true;
-                        alert('点击数字可呼出输入法修改数字');
-                    }
-                    switchMainView("page-display");
-                });
-            }
-
-            const resetBtn = document.getElementById('resetDefault');
-            if (resetBtn) resetBtn.addEventListener('click', () => {
-                Object.assign(config, DEFAULT_CONFIG);
-                const updateList = [
-                    ['BgAlpha', 'bgAlpha', v => v.toFixed(2)],
-                    ['Shadow', 'shadowAlpha', v => v.toFixed(2)],
-                    ['ScaleMin', 'scaleMin', v => v.toFixed(1)], ['ScaleMax', 'scaleMax', v => v.toFixed(1)],
-                    ['Trans', 'transRange', v => v.toFixed(0)], ['BubbleSize', 'bubbleSize', v => v.toFixed(1)],
-                    ['BubbleTime', 'bubbleSec', v => v.toFixed(2)], ['PageTrans', 'pageTransSec', v => v.toFixed(2)]
-                ];
-                updateList.forEach(([name, key, fmt]) => {
-                    const inp = document.getElementById('inp' + name);
-                    const val = document.getElementById('val' + name);
-                    if (inp && val) { inp.value = config[key]; val.textContent = fmt(config[key]); updateSliderFill(inp); }
-                });
-                const inpMusicVol = document.getElementById('inpMusicVol');
-                const valMusicVol = document.getElementById('valMusicVol');
-                if (inpMusicVol && valMusicVol) { inpMusicVol.value = config.musicVol; valMusicVol.textContent = config.musicVol; updateSliderFill(inpMusicVol); }
-                applyVolume();
-                applyBackground("#ffffff");
-                updateCardStyle(); updateBubbleSize(); restartBubbleAnim();
-            });
-
-            const musicToggle = document.getElementById('musicToggle');
-            if (musicToggle) {
-                musicToggle.addEventListener('click', () => {
-                    musicEnabled = !musicEnabled;
-                    updateMusicButton();
-                    if (musicEnabled) { applyVolume(); audio.play().catch(() => {}); } else { audio.pause(); }
-                });
-            }
-
-            const toggleBg = document.getElementById('toggleBg');
-            if (toggleBg) {
-                toggleBg.addEventListener('click', () => {
-                    if (config.bgColor === "#000000") applyBackground("#ffffff");
-                    else applyBackground("#000000");
-                });
-            }
-
-            setTimeout(() => {
-                alert('记得看右上角的设置按钮啊！！！');
-                setTimeout(() => {
-                    alert('音乐已经默认开启，可到右上角设置关闭');
-                }, 3000);
-            }, 100);
-
-            initBubbles();
-            initSliders();
-            applyBackground("#ffffff");
-            updateMusicButton();
-            applyVolume();
-            playMusic();
-
-            document.addEventListener('pointerup', resumeBubbleAnim);
-            document.addEventListener('pointercancel', resumeBubbleAnim);
-
-            window.addEventListener('resize', () => {
-                document.querySelectorAll('input[type="range"]').forEach(inp => {
-                    inp._trackWidth = 0;
-                    updateSliderFill(inp);
-                });
-            });
+        const [, key, attrsRaw, valueRaw] = match;
+        let type = '', color = '', title = '', subtitle = '';
+        attrsRaw.split(',').forEach(attr => {
+            const [k, v] = attr.split('=').map(s => s.trim());
+            if (k === 'type') type = v; 
+            else if (k === 'color') color = v; 
+            else if (k === 'title') title = v;
+            else if (k === 'subtitle') subtitle = v;
         });
 
-        const paramsMeta = {
-            bgAlpha: { min: 0, max: 1, fixed: 2 },
-            shadowAlpha: { min: 0.01, max: 1, fixed: 2 },
-            scaleMin: { min: 0.1, max: 10, fixed: 1 }, scaleMax: { min: 0.1, max: 10, fixed: 1 },
-            transRange: { min: 0, max: 300, fixed: 1 }, bubbleSize: { min: 0, max: 100, fixed: 1 },
-            bubbleSec: { min: 0.2, max: 10, fixed: 2 }, pageTransSec: { min: 0, max: 2.5, fixed: 2 }
-        };
+        if (!type || !color || !title) { errors.push({ line: rawLine, reason: '缺少属性' }); return; }
 
-        const DEFAULT_CONFIG = {
-            bgAlpha: 0.20, shadowAlpha: 0.06, scaleMin: 1, scaleMax: 2.5,
-            transRange: 30, bubbleSize: 50, bubbleSec: 1, 
-            pageTransSec: 0.6,  // 默认时长从 0.3s 改为 0.6s，让动画清晰可见
-            bgColor: "#ffffff", musicVol: 100
-        };
-        const config = { ...DEFAULT_CONFIG };
-
-        const allViews = document.querySelectorAll(".view-page");
-        const bgWrap = document.querySelector(".bg-wrap");
-        const audio = document.getElementById("bgMusic");
-        const backBtn = document.getElementById('backBtn');
-
-        let musicEnabled = true;
-        let bubbleTimer = null;
-        let isDragging = false;
-        let animLock = false;
-
-        function pauseBubbleAnim() {
-            if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; }
-            isDragging = true;
+        // 严格校验
+        if (!['page', 'text', 'tp_web'].includes(type)) {
+            errors.push({ line: rawLine, reason: `type 类型错误：'${type}'，只能是 page, text 或 tp_web` });
+            return;
         }
-        function resumeBubbleAnim() {
-            if (!isDragging) return;
-            isDragging = false;
-            setTimeout(() => { if (!isDragging) restartBubbleAnim(); }, 50);
+        if (color !== 'ys_1' && color !== 'ys_2' && !color.startsWith('#')) {
+            errors.push({ line: rawLine, reason: `color 格式错误：'${color}'，只能是 ys_1, ys_2 或 #开头的颜色` });
+            return;
         }
 
-        // ============================================================
-        // 动画时序（提高最小值，确保动画清晰可见）
-        // ============================================================
-        function getAnimTiming() {
-            // 把滑块值(0~2.5s)映射到 500ms ~ 2500ms 的实际动画时长
-            // 默认 0.6s → 600ms（morph 330ms + colorFade 150ms + fadeIn 120ms）
-            const rawMs = config.pageTransSec * 1000;
-            const totalMs = Math.min(Math.max(rawMs, 500), 2500);
-            return {
-                total: totalMs,
-                morph: Math.round(totalMs * 0.55),
-                colorFade: Math.round(totalMs * 0.25),
-                fadeIn: Math.round(totalMs * 0.20)
-            };
+        let children = [], value = valueRaw.trim();
+        if (type === 'page') {
+            const matches = value.match(/'([^']+)'/g);
+            if (matches) children = matches.map(s => s.replace(/'/g, ''));
+        } else {
+            if (value.startsWith("'") && value.endsWith("'")) value = value.slice(1, -1);
+            value = value.replace(/\\n/g, '\n');
         }
 
-        function getBtnRadius(btn, btnRect) {
-            const computed = getComputedStyle(btn).borderRadius;
-            if (computed.includes('%')) {
-                return btnRect.width / 2;
+        if (nodes[key]) { errors.push({ line: rawLine, reason: `重复变量` }); return; }
+        nodes[key] = { key, type, color, title, subtitle, children, value };
+    });
+
+    const checkDeps = (keys, parent) => keys.forEach(k => { if (!nodes[k]) errors.push({ line: `检查 ${parent}`, reason: `找不到 '${k}'` }); });
+    checkDeps(homeChildren, 'home'); Object.values(nodes).forEach(n => { if (n.type === 'page') checkDeps(n.children, n.key); });
+
+    return { nodes, homeChildren, errors };
+}
+
+function renderErrorView(text, errors) {
+    const lines = text.split('\n');
+    let errHtml = `<div class="error-code-box">`;
+    lines.forEach(line => {
+        if (errors.some(e => e.line === line) && line.trim() !== '') {
+            errHtml += `<span class="highlight">》${line}《</span>\n`;
+        } else {
+            errHtml += line + '\n';
+        }
+    });
+    errHtml += `</div><ul class="error-list">`;
+    errors.forEach(e => {
+        errHtml += `<li><b>${e.line}</b> : ${e.reason}</li>`;
+    });
+    errHtml += `</ul>`;
+    
+    document.getElementById('error-details').innerHTML = errHtml;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const defaultText = document.getElementById('default-config').textContent;
+    const savedConfig = localStorage.getItem('app_config_text');
+    const configText = savedConfig !== null ? savedConfig : defaultText;
+    
+    document.getElementById('configTextarea').value = configText;
+
+    const parseResult = tryParseConfig(configText);
+    let nodes = parseResult.nodes;
+    let homeChildren = parseResult.homeChildren;
+    let errors = parseResult.errors;
+
+    const pagesContainer = document.getElementById('pages-container');
+    
+    // 初始化导航栈
+    let navStack = [{ id: 'page-home' }];
+
+    if (errors.length > 0) {
+        renderErrorView(configText, errors);
+        document.getElementById('page-error').classList.add('active');
+        document.getElementById('backBtn').classList.add('visible');
+        navStack = [{ id: 'page-home' }, { id: 'page-config', btnRef: document.getElementById('goConfig') }, { id: 'page-error', btnRef: document.getElementById('goConfig') }];
+    } else {
+        let homeHtml = `<div class="view-page active" id="page-home"><div class="card"><div class="title">✨ 欢迎</div><div class="col-center" id="home-buttons"></div></div></div>`;
+        Object.values(nodes).forEach(node => {
+            if (node.type === 'page' || node.type === 'text') {
+                let content = node.type === 'page' ? `<div class="col-center" id="btns-${node.key}"></div>` : `<div class="announce-content">${node.value}</div>`;
+                let titleHtml = node.subtitle ? `<div class="title">${node.subtitle}</div>` : '';
+                homeHtml += `<div class="view-page" id="page-${node.key}"><div class="card ${node.type === 'text' ? 'set-card' : ''}">${titleHtml}${content}</div></div>`;
             }
-            return parseFloat(computed) || 0;
-        }
+        });
+        pagesContainer.insertAdjacentHTML('afterbegin', homeHtml);
 
-        function getButtonColor(btn) {
-            const style = getComputedStyle(btn);
-            return style.backgroundColor;
-        }
+        function renderButton(node, container) {
+            const btn = document.createElement('button');
+            btn.className = 'btn-custom'; btn.dataset.key = node.key; btn.textContent = node.title;
+            if (node.color === 'ys_1') btn.classList.add('btn-theme-1');
+            else if (node.color === 'ys_2') btn.classList.add('btn-theme-2');
+            else if (node.color.startsWith('#')) { btn.style.setProperty('--btn-bg', node.color); }
+            else btn.classList.add('btn-theme-1');
 
-        function saveCardVisual(card) {
-            return {
-                background: card.style.background,
-                border: card.style.border,
-                backdropFilter: card.style.backdropFilter,
-                webkitBackdropFilter: card.style.webkitBackdropFilter,
-                boxShadow: card.style.boxShadow
-            };
-        }
-        function hideCardVisual(card) {
-            card.style.background = 'transparent';
-            card.style.border = '1px solid transparent';
-            card.style.backdropFilter = 'none';
-            card.style.webkitBackdropFilter = 'none';
-            card.style.boxShadow = 'none';
-        }
-        function restoreCardVisual(card, saved) {
-            card.style.background = saved.background;
-            card.style.border = saved.border;
-            card.style.backdropFilter = saved.backdropFilter;
-            card.style.webkitBackdropFilter = saved.webkitBackdropFilter;
-            card.style.boxShadow = saved.boxShadow;
-        }
-
-        // ============================================================
-        // 按钮 → 页面
-        // ============================================================
-        function animateButtonToPage(btn, targetPageId) {
-            if (animLock) return;
-            animLock = true;
-
-            const ball = document.getElementById('morphBall');
-            const home = document.getElementById('page-home');
-            const targetPage = document.getElementById(targetPageId);
-            const targetCard = targetPage.querySelector('.card');
-            const contents = Array.from(targetCard.children);
-
-            const btnRect = btn.getBoundingClientRect();
-            const cardRect = targetCard.getBoundingClientRect();
-            const timing = getAnimTiming();
-            const btnColor = getButtonColor(btn);
-
-            const btnRadius = getBtnRadius(btn, btnRect);
-            const cardRadius = 28;
-
-            pauseBubbleAnim();
-
-            home.style.transition = `opacity ${Math.round(timing.morph * 0.5)}ms ease`;
-            home.style.opacity = '0';
-            btn.classList.add('anim-hidden');
-
-            targetPage.classList.add('active');
-            targetPage.style.opacity = '1';
-            targetPage.style.pointerEvents = 'none';
-            targetPage.style.zIndex = '3';
-            const savedCardVisual = saveCardVisual(targetCard);
-            hideCardVisual(targetCard);
-            contents.forEach(el => {
-                el.style.transition = 'none';
-                el.style.opacity = '0';
+            btn.addEventListener('click', () => {
+                if (node.type === 'tp_web') window.open(node.value, '_blank');
+                else {
+                    const current = document.querySelector('.view-page.active').id;
+                    navStack.push({ id: `page-${node.key}`, btnRef: btn });
+                    animateButtonToPage(btn, `page-${node.key}`, current);
+                }
             });
+            container.appendChild(btn);
+        }
+        homeChildren.forEach(key => renderButton(nodes[key], document.getElementById('home-buttons')));
+        Object.values(nodes).forEach(node => { if (node.type === 'page') node.children.forEach(key => renderButton(nodes[key], document.getElementById(`btns-${node.key}`))); });
+    }
 
-            ball.style.setProperty('--morph-color', btnColor);
-            ball.style.setProperty('--fade-duration', '0ms');
-            ball.classList.remove('fade-color');
-            ball.style.display = 'block';
-            ball.style.transition = 'none';
-            ball.style.top = btnRect.top + 'px';
-            ball.style.left = btnRect.left + 'px';
-            ball.style.width = btnRect.width + 'px';
-            ball.style.height = btnRect.height + 'px';
-            ball.style.borderRadius = btnRadius + 'px';
+    const DEFAULT_CONFIG = { bgAlpha: 0.20, shadowAlpha: 0.25, scaleMin: 1, scaleMax: 2.5, transRange: 30, bubbleSize: 50, bubbleSec: 1, pageTransSec: 0.6, bgColor: "#ffffff", musicVol: 100 };
+    const config = { ...DEFAULT_CONFIG };
+    const bgWrap = document.querySelector(".bg-wrap"), audio = document.getElementById("bgMusic");
+    let musicEnabled = true, bubbleTimer = null, isDragging = false, animLock = false;
 
-            ball.style.willChange = 'width, height, top, left, border-radius';
+    function pauseBubbleAnim() { if (bubbleTimer) { clearInterval(bubbleTimer); bubbleTimer = null; } isDragging = true; }
+    function resumeBubbleAnim() { if (!isDragging) return; isDragging = false; setTimeout(() => { if (!isDragging) restartBubbleAnim(); }, 50); }
+    function getAnimTiming() { 
+        const ms = Math.min(Math.max(config.pageTransSec * 1000, 500), 5000); 
+        return { morph: Math.round(ms * 0.55), colorFade: Math.round(ms * 0.25), fadeIn: Math.round(ms * 0.20) }; 
+    }
+    function getBtnRadius(btn, rect) { return getComputedStyle(btn).borderRadius.includes('%') ? rect.width / 2 : (parseFloat(getComputedStyle(btn).borderRadius) || 0); }
 
+    function updateCardStyle() {
+        document.documentElement.style.setProperty('--card-bg', `rgba(255, 255, 255, ${config.bgAlpha})`);
+        document.documentElement.style.setProperty('--card-shadow', `0 8px 32px rgba(0, 0, 0, ${config.shadowAlpha})`);
+    }
+
+    function animateButtonToPage(btn, targetId, sourceId) {
+        if (animLock) return; animLock = true;
+        const ball = document.getElementById('morphBall'), sourcePage = document.getElementById(sourceId), targetPage = document.getElementById(targetId);
+        const targetCard = targetPage.querySelector('.card'), contents = Array.from(targetCard.children);
+        const btnRect = btn.getBoundingClientRect(), cardRect = targetCard.getBoundingClientRect();
+        const t = getAnimTiming(), btnColor = getComputedStyle(btn).backgroundColor;
+        
+        pauseBubbleAnim(); btn.classList.add('anim-hidden');
+        sourcePage.style.cssText += `transition: opacity ${t.morph * 0.5}ms ease; opacity: 0;`;
+        targetPage.classList.add('active'); targetPage.style.cssText += `opacity: 1; pointer-events: none; z-index: 3;`;
+        targetCard.classList.add('no-glass'); contents.forEach(el => el.style.cssText = 'transition: none; opacity: 0;');
+
+        ball.style.cssText = `display: block; top: ${btnRect.top}px; left: ${btnRect.left}px; width: ${btnRect.width}px; height: ${btnRect.height}px; border-radius: ${getBtnRadius(btn, btnRect)}px; transition: none; z-index: 1000000;`;
+        ball.style.setProperty('--morph-color', btnColor); ball.style.setProperty('--fade-duration', '0ms'); ball.classList.remove('fade-color');
+        void ball.offsetWidth;
+
+        requestAnimationFrame(() => {
+            ball.style.transition = `top ${t.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), left ${t.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), width ${t.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), height ${t.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), border-radius ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+            ball.style.cssText += `top: ${cardRect.top}px; left: ${cardRect.left}px; width: ${cardRect.width}px; height: ${cardRect.height}px; border-radius: 28px;`;
+        });
+
+        setTimeout(() => {
+            ball.style.setProperty('--fade-duration', t.colorFade + 'ms'); ball.classList.add('fade-color');
+            setTimeout(() => {
+                ball.style.display = 'none'; ball.classList.remove('fade-color'); targetCard.classList.remove('no-glass');
+                contents.forEach(el => el.style.cssText = `transition: opacity ${t.fadeIn}ms ease; opacity: 1;`);
+                setTimeout(() => {
+                    targetPage.style.cssText += `pointer-events: auto; z-index: 2;`;
+                    sourcePage.classList.remove('active'); sourcePage.style.cssText = ''; contents.forEach(el => el.style.cssText = '');
+                    document.getElementById('backBtn').classList.add('visible');
+                    animLock = false; resumeBubbleAnim();
+                    targetPage.querySelectorAll('input[type="range"]').forEach(inp => { inp._trackWidth = 0; updateSliderFill(inp); });
+                }, t.fadeIn);
+            }, t.colorFade);
+        }, t.morph);
+    }
+
+    function animatePageToButton(btn, sourceId, targetId) {
+        if (animLock) return; animLock = true;
+        const ball = document.getElementById('morphBall'), targetPage = document.getElementById(targetId), sourcePage = document.getElementById(sourceId);
+        const sourceCard = sourcePage.querySelector('.card'), contents = Array.from(sourceCard.children);
+        const btnRect = btn.getBoundingClientRect(), cardRect = sourceCard.getBoundingClientRect();
+        const t = getAnimTiming(), btnColor = getComputedStyle(btn).backgroundColor;
+
+        pauseBubbleAnim(); contents.forEach(el => el.style.cssText = `transition: opacity ${t.fadeIn}ms ease; opacity: 0;`);
+        document.getElementById('backBtn').classList.remove('visible');
+
+        setTimeout(() => {
+            sourceCard.classList.add('no-glass');
+            ball.style.cssText = `display: block; top: ${cardRect.top}px; left: ${cardRect.left}px; width: ${cardRect.width}px; height: ${cardRect.height}px; border-radius: 28px; transition: none; z-index: 1000000;`;
+            ball.style.setProperty('--morph-color', btnColor); ball.style.setProperty('--fade-duration', '0ms'); ball.classList.remove('fade-color');
             void ball.offsetWidth;
 
-            // 阶段 1：变形
             requestAnimationFrame(() => {
-                ball.style.transition = `top ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), left ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), width ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), height ${timing.morph}ms cubic-bezier(0.34, 1.05, 0.64, 1), border-radius ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-                ball.style.top = cardRect.top + 'px';
-                ball.style.left = cardRect.left + 'px';
-                ball.style.width = cardRect.width + 'px';
-                ball.style.height = cardRect.height + 'px';
-                ball.style.borderRadius = cardRadius + 'px';
+                ball.style.transition = `top ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1), left ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1), width ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1), height ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1), border-radius ${t.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+                ball.style.cssText += `top: ${btnRect.top}px; left: ${btnRect.left}px; width: ${btnRect.width}px; height: ${btnRect.height}px; border-radius: ${getBtnRadius(btn, btnRect)}px;`;
             });
 
-            // 阶段 2：颜色褪去
+            sourcePage.style.transition = `opacity ${t.morph}ms ease`; sourcePage.style.opacity = '0';
+
             setTimeout(() => {
-                ball.style.setProperty('--fade-duration', timing.colorFade + 'ms');
-                ball.classList.add('fade-color');
+                ball.style.display = 'none'; btn.classList.remove('anim-hidden'); sourceCard.classList.remove('no-glass');
+                targetPage.classList.add('active'); targetPage.style.cssText += `transition: none; opacity: 0;`;
+                void targetPage.offsetWidth;
+                targetPage.style.cssText += `transition: opacity ${t.fadeIn}ms ease; opacity: 1;`;
 
-                // 阶段 3：内容浮现
                 setTimeout(() => {
-                    ball.style.display = 'none';
-                    ball.style.willChange = '';
-                    ball.classList.remove('fade-color');
+                    sourcePage.classList.remove('active'); sourcePage.style.cssText = ''; contents.forEach(el => el.style.cssText = '');
+                    targetPage.style.cssText = `opacity: 1; pointer-events: auto;`;
+                    if (targetId !== 'page-home') document.getElementById('backBtn').classList.add('visible');
+                    animLock = false; resumeBubbleAnim();
+                }, t.fadeIn);
+            }, t.morph);
+        }, t.fadeIn);
+    }
 
-                    restoreCardVisual(targetCard, savedCardVisual);
+    // 统一处理错误页面的返回
+    function handleErrorReturn(animBtn) {
+        localStorage.removeItem('app_config_text');
+        const saved = localStorage.getItem('app_config_text');
+        document.getElementById('configTextarea').value = saved !== null ? saved : defaultText;
+        
+        // 强制重置导航栈，确保从错误页退回到配置页是合理的
+        navStack = [{ id: 'page-home' }, { id: 'page-config', btnRef: document.getElementById('goConfig') }];
+        
+        animatePageToButton(animBtn, 'page-error', 'page-config');
+    }
 
-                    contents.forEach(el => {
-                        el.style.transition = `opacity ${timing.fadeIn}ms ease`;
-                        el.style.opacity = '1';
-                    });
+    document.getElementById('errBackBtn').addEventListener('click', function() {
+        handleErrorReturn(this);
+    });
 
-                    setTimeout(() => {
-                        targetPage.style.pointerEvents = 'auto';
-                        targetPage.style.zIndex = '';
-                        home.classList.remove('active');
-                        home.style.opacity = '';
-                        home.style.transition = '';
-                        contents.forEach(el => {
-                            el.style.transition = '';
-                            el.style.opacity = '';
-                        });
+    document.getElementById('goSetting').addEventListener('click', () => {
+        const cur = document.querySelector('.view-page.active');
+        if (cur.id !== 'page-setting' && cur.id !== 'page-display') {
+            navStack.push({ id: 'page-setting', btnRef: document.getElementById('goSetting') });
+            animateButtonToPage(document.getElementById('goSetting'), 'page-setting', cur.id);
+        }
+    });
 
-                        if (backBtn) backBtn.classList.add('visible');
-                        animLock = false;
-                        resumeBubbleAnim();
+    document.getElementById('goConfig').addEventListener('click', () => {
+        const cur = document.querySelector('.view-page.active');
+        if (cur.id !== 'page-config' && cur.id !== 'page-error') {
+            navStack.push({ id: 'page-config', btnRef: document.getElementById('goConfig') });
+            animateButtonToPage(document.getElementById('goConfig'), 'page-config', cur.id);
+        }
+    });
 
-                        requestAnimationFrame(() => {
-                            targetPage.querySelectorAll('input[type="range"]').forEach(inp => {
-                                inp._trackWidth = 0;
-                                updateSliderFill(inp);
-                            });
-                        });
-                    }, timing.fadeIn);
-                }, timing.colorFade);
-            }, timing.morph);
+    document.getElementById('backBtn').addEventListener('click', () => {
+        const activePage = document.querySelector('.view-page.active').id;
+        
+        // 如果当前是错误页面，拦截左上角返回事件，统一走错误返回逻辑
+        if (activePage === 'page-error') {
+            handleErrorReturn(document.getElementById('errBackBtn')); // 借用底部的按钮作为动画收缩的目标点
+            return;
+        }
+        
+        if (navStack.length <= 1) return;
+        const cur = navStack.pop(), prev = navStack[navStack.length - 1];
+        if (cur.btnRef) {
+            animatePageToButton(cur.btnRef, cur.id, prev.id);
+        } else {
+            switchMainView(prev.id);
+        }
+    });
+
+    // 应用配置
+    let isApplying = false;
+    document.getElementById('applyConfig').addEventListener('click', function() {
+        if (isApplying) return;
+        
+        if (document.activeElement && document.activeElement.blur) {
+            document.activeElement.blur();
         }
 
-        // ============================================================
-        // 页面 → 按钮
-        // ============================================================
-        function animatePageToButton(btn, sourcePageId) {
-            if (animLock) return;
-            animLock = true;
+        const btn = this;
+        btn.disabled = true;
+        btn.textContent = '解析中...';
+        isApplying = true;
 
-            const ball = document.getElementById('morphBall');
-            const home = document.getElementById('page-home');
-            const sourcePage = document.getElementById(sourcePageId);
-            const sourceCard = sourcePage.querySelector('.card');
-            const contents = Array.from(sourceCard.children);
+        const newText = document.getElementById('configTextarea').value;
+        const res = tryParseConfig(newText);
 
-            const btnRect = btn.getBoundingClientRect();
-            const cardRect = sourceCard.getBoundingClientRect();
-            const timing = getAnimTiming();
-            const btnColor = getButtonColor(btn);
-
-            const btnRadius = getBtnRadius(btn, btnRect);
-            const cardRadius = 28;
-
-            pauseBubbleAnim();
-
-            contents.forEach(el => {
-                el.style.transition = `opacity ${timing.fadeIn}ms ease`;
-                el.style.opacity = '0';
-            });
-
-            if (backBtn) backBtn.classList.remove('visible');
-
-            setTimeout(() => {
-                const savedCardVisual = saveCardVisual(sourceCard);
-                hideCardVisual(sourceCard);
-
-                ball.style.setProperty('--morph-color', btnColor);
-                ball.style.setProperty('--fade-duration', '0ms');
+        setTimeout(() => {
+            if (res.errors.length === 0) {
+                localStorage.setItem('app_config_text', newText);
+                
+                const rect = btn.getBoundingClientRect();
+                const ball = document.getElementById('morphBall');
+                const targetWidth = Math.min(window.innerWidth - 40, 440);
+                
+                ball.style.cssText = `display: block; top: ${rect.top}px; left: ${rect.left}px; width: ${rect.width}px; height: ${rect.height}px; border-radius: ${getBtnRadius(btn, rect)}px; transition: none; z-index: 1000000; transform: none;`;
+                ball.style.setProperty('--morph-color', '#3B82F6');
                 ball.classList.remove('fade-color');
-                ball.style.display = 'block';
-                ball.style.transition = 'none';
-                ball.style.top = cardRect.top + 'px';
-                ball.style.left = cardRect.left + 'px';
-                ball.style.width = cardRect.width + 'px';
-                ball.style.height = cardRect.height + 'px';
-                ball.style.borderRadius = cardRadius + 'px';
-                ball.style.willChange = 'width, height, top, left, border-radius';
-
+                ball.style.setProperty('--fade-duration', '0ms');
                 void ball.offsetWidth;
 
                 requestAnimationFrame(() => {
-                    ball.style.transition = `top ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), left ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), width ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), height ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1), border-radius ${timing.morph}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-                    ball.style.top = btnRect.top + 'px';
-                    ball.style.left = btnRect.left + 'px';
-                    ball.style.width = btnRect.width + 'px';
-                    ball.style.height = btnRect.height + 'px';
-                    ball.style.borderRadius = btnRadius + 'px';
-                });
-
-                sourcePage.style.transition = `opacity ${timing.morph}ms ease`;
-                sourcePage.style.opacity = '0';
-
-                setTimeout(() => {
-                    ball.style.display = 'none';
-                    ball.style.willChange = '';
-                    btn.classList.remove('anim-hidden');
-                    restoreCardVisual(sourceCard, savedCardVisual);
-
-                    home.classList.add('active');
-                    home.style.transition = 'none';
-                    home.style.opacity = '0';
-                    void home.offsetWidth;
-                    home.style.transition = `opacity ${timing.fadeIn}ms ease`;
-                    home.style.opacity = '1';
-
+                    ball.style.transition = 'all 0.4s cubic-bezier(0.34, 1.05, 0.64, 1)';
+                    ball.style.top = '50%';
+                    ball.style.left = '50%';
+                    ball.style.width = targetWidth + 'px';
+                    ball.style.height = '78vh';
+                    ball.style.transform = 'translate(-50%, -50%)';
+                    ball.style.borderRadius = '28px';
+                    
                     setTimeout(() => {
-                        sourcePage.classList.remove('active');
-                        sourcePage.style.transition = '';
-                        sourcePage.style.opacity = '';
-                        sourcePage.style.pointerEvents = '';
-                        contents.forEach(el => {
-                            el.style.transition = '';
-                            el.style.opacity = '';
-                        });
-                        home.style.transition = '';
-                        home.style.opacity = '';
-
-                        animLock = false;
-                        resumeBubbleAnim();
-                    }, timing.fadeIn);
-                }, timing.morph);
-            }, timing.fadeIn);
-        }
-
-        // ============================================================
-        // 普通页面切换（提高最小时长）
-        // ============================================================
-        function switchMainView(targetId) {
-            const currentActive = document.querySelector('.view-page.active');
-            const targetEl = document.getElementById(targetId);
-            if (currentActive === targetEl) return;
-
-            pauseBubbleAnim();
-
-            // 最小时长从 200ms 提高到 400ms
-            const duration = Math.min(Math.max(config.pageTransSec * 1000, 400), 1500);
-
-            if (currentActive) {
-                currentActive.style.transition = `opacity ${duration}ms ease`;
-                currentActive.style.opacity = '0';
-                currentActive.classList.remove('active');
-                currentActive.style.pointerEvents = 'none';
-                setTimeout(() => {
-                    currentActive.style.opacity = '';
-                    currentActive.style.transition = '';
-                }, duration);
-            }
-
-            targetEl.style.transition = 'none';
-            targetEl.style.opacity = '0';
-            targetEl.classList.add('active');
-            targetEl.style.pointerEvents = 'auto';
-            void targetEl.offsetWidth;
-            targetEl.style.transition = `opacity ${duration}ms ease`;
-            targetEl.style.opacity = '1';
-
-            setTimeout(() => {
-                targetEl.style.transition = '';
-                targetEl.style.opacity = '';
-                requestAnimationFrame(() => {
-                    targetEl.querySelectorAll('input[type="range"]').forEach(inp => {
-                        inp._trackWidth = 0;
-                        updateSliderFill(inp);
-                    });
+                        ball.style.setProperty('--fade-duration', '200ms');
+                        ball.classList.add('fade-color');
+                    }, 200);
                 });
-                resumeBubbleAnim();
-            }, duration);
 
-            if (backBtn) {
-                if (targetId === 'page-home') {
-                    backBtn.classList.remove('visible');
-                } else {
-                    backBtn.classList.add('visible');
-                }
-            }
-        }
+                setTimeout(() => { location.reload(); }, 500);
 
-        function updateMusicButton() {
-            const btn = document.getElementById('musicToggle');
-            if (!btn) return;
-            if (musicEnabled) {
-                btn.classList.remove("off");
-                btn.textContent = "🎵 音乐：开启";
             } else {
-                btn.classList.add("off");
-                btn.textContent = "🔇 音乐：关闭";
+                btn.disabled = false;
+                btn.textContent = '应用配置';
+                isApplying = false;
+                
+                renderErrorView(newText, res.errors);
+                navStack.push({ id: 'page-error', btnRef: btn });
+                animateButtonToPage(btn, 'page-error', 'page-config');
             }
-        }
+        }, 1500);
+    });
 
-        function applyVolume() {
-            if (audio) audio.volume = config.musicVol / 100;
+    document.getElementById('resetConfigDefault').addEventListener('click', () => {
+        if(confirm('确定要恢复初始配置吗？当前修改的文本将被替换为默认模板。')) {
+            document.getElementById('configTextarea').value = defaultText;
         }
+    });
 
-        function playMusic() {
-            if (!audio || !musicEnabled) return;
-            applyVolume();
-            audio.play().catch(() => {
-                const oncePlay = () => {
-                    if (musicEnabled && audio) audio.play().catch(() => {});
-                    document.removeEventListener('click', oncePlay);
-                };
-                document.addEventListener('click', oncePlay, { once: true });
-            });
-        }
+    document.getElementById('goDisplay').addEventListener('click', () => { 
+        const btn = document.getElementById('goDisplay');
+        const current = document.querySelector('.view-page.active').id;
+        navStack.push({ id: 'page-display', btnRef: btn }); 
+        animateButtonToPage(btn, 'page-display', current); 
+    });
 
-        audio.addEventListener('error', () => {
-            console.warn("音乐文件加载失败。请确保 music.mp3 与 HTML 文件在同一目录下。");
-            musicEnabled = false;
-            updateMusicButton();
+    document.getElementById('musicToggle').addEventListener('click', () => {
+        musicEnabled = !musicEnabled;
+        document.getElementById('musicToggle').classList.toggle('off', !musicEnabled);
+        document.getElementById('musicToggle').textContent = musicEnabled ? "🎵 音乐：开启" : "🔇 音乐：关闭";
+        musicEnabled ? audio.play().catch(()=>{}) : audio.pause();
+    });
+    
+    document.getElementById('toggleBg').addEventListener('click', () => applyBackground(config.bgColor === "#000000" ? "#ffffff" : "#000000"));
+    
+    document.getElementById('resetDefault').addEventListener('click', () => {
+        Object.assign(config, DEFAULT_CONFIG);
+        
+        const resetMap = [
+            { id: 'inpBgAlpha', valId: 'valBgAlpha', key: 'bgAlpha', fixed: 2 },
+            { id: 'inpShadow', valId: 'valShadow', key: 'shadowAlpha', fixed: 2 },
+            { id: 'inpScaleMin', valId: 'valScaleMin', key: 'scaleMin', fixed: 1 },
+            { id: 'inpScaleMax', valId: 'valScaleMax', key: 'scaleMax', fixed: 1 },
+            { id: 'inpTrans', valId: 'valTrans', key: 'transRange', fixed: 0 },
+            { id: 'inpBubbleSize', valId: 'valBubbleSize', key: 'bubbleSize', fixed: 1 },
+            { id: 'inpBubbleTime', valId: 'valBubbleTime', key: 'bubbleSec', fixed: 2 },
+            { id: 'inpPageTrans', valId: 'valPageTrans', key: 'pageTransSec', fixed: 2 },
+            { id: 'inpMusicVol', valId: 'valMusicVol', key: 'musicVol', fixed: 0 }
+        ];
+
+        resetMap.forEach(item => {
+            const inp = document.getElementById(item.id);
+            const valSpan = document.getElementById(item.valId);
+            if (inp && valSpan) {
+                inp.value = config[item.key];
+                valSpan.textContent = config[item.key].toFixed(item.fixed);
+                updateSliderFill(inp);
+            }
         });
 
-        function updateBubbleDuration() {
-            document.documentElement.style.setProperty('--bubble-duration', config.bubbleSec + 's');
-        }
-        function animateBubble(bubble) {
-            const r = config.transRange;
-            const x = (Math.random() * r * 2 - r) + "%";
-            const y = (Math.random() * r * 2 - r) + "%";
-            const s = config.scaleMin + Math.random() * (config.scaleMax - config.scaleMin);
-            bubble.style.transform = `translate3d(${x},${y},0) scale(${s})`;
-        }
-        function restartBubbleAnim() {
-            if (bubbleTimer) clearInterval(bubbleTimer);
-            updateBubbleDuration();
-            document.querySelectorAll(".bubble").forEach(bub => animateBubble(bub));
-            bubbleTimer = setInterval(() => { document.querySelectorAll(".bubble").forEach(bub => animateBubble(bub)); }, config.bubbleSec * 1000);
-        }
+        applyVolume(); applyBackground("#ffffff"); updateCardStyle(); updateBubbleSize(); restartBubbleAnim();
+    });
 
-        function initBubbles() {
-            document.querySelectorAll(".bubble").forEach(bub => {
-                bub.style.transition = 'none';
-                animateBubble(bub);
-            });
-            void document.body.offsetHeight;
-            document.querySelectorAll(".bubble").forEach(bub => { bub.style.transition = ''; });
-            restartBubbleAnim();
-        }
+    function applyVolume() { if (audio) audio.volume = config.musicVol / 100; }
+    function updateBubbleSize() { document.querySelectorAll(".bubble").forEach(b => b.style.setProperty('--bubble-size', config.bubbleSize + '%')); }
+    function applyBackground(color) {
+        config.bgColor = color; bgWrap.style.background = color;
+        const toggle = document.getElementById('toggleBg');
+        document.body.classList.toggle('bg-black', color !== "#ffffff");
+        toggle.className = color === "#ffffff" ? "btn-black" : "btn-white";
+        updateCardStyle();
+        document.querySelectorAll('input[type="range"]').forEach(inp => { inp._trackWidth = 0; updateSliderFill(inp); });
+    }
+    function updateSliderFill(slider) {
+        if (!slider) return;
+        const percent = Math.max(0, Math.min(100, ((parseFloat(slider.value) - parseFloat(slider.min)) / (parseFloat(slider.max) - parseFloat(slider.min))) * 100));
+        if (!slider._trackWidth) slider._trackWidth = slider.offsetWidth;
+        const visualPercent = slider._trackWidth > 0 ? ((22 + (slider._trackWidth - 22) * (percent / 100)) / slider._trackWidth) * 100 : percent;
+        const fillEl = slider.closest('.slider-track')?.querySelector('.slider-fill');
+        if (fillEl) fillEl.style.width = visualPercent + '%';
+    }
 
-        function updateCardStyle() {
-            const bg = `rgba(255,255,255,${config.bgAlpha})`;
-            const filter = `blur(38px) saturate(60%)`;
-            const shadow = `0 8px 32px rgba(0,0,0,${config.shadowAlpha})`;
-            document.querySelectorAll('.view-page.active .card').forEach(card => {
-                card.style.background = bg;
-                card.style.border = `1px solid ${bg}`;
-                card.style.backdropFilter = filter;
-                card.style.webkitBackdropFilter = filter;
-                card.style.boxShadow = shadow;
-            });
-        }
+    function checkIsOnThumb(inp, clientX) {
+        const rect = inp.getBoundingClientRect();
+        if (rect.width === 0) return true;
+        const thumbLeft = (rect.width - 22) * ((parseFloat(inp.value) - parseFloat(inp.min)) / (parseFloat(inp.max) - parseFloat(inp.min)));
+        return (clientX - rect.left) >= thumbLeft - 10 && (clientX - rect.left) <= thumbLeft + 32;
+    }
 
-        function updateBubbleSize() {
-            document.querySelectorAll(".bubble").forEach(bub => { bub.style.setProperty('--bubble-size', config.bubbleSize + '%'); });
-        }
+    document.addEventListener('pointerup', () => {
+        document.querySelectorAll('input[type="range"]').forEach(inp => { inp._touchingSlot = false; inp._savedValue = null; });
+    });
+    document.addEventListener('pointercancel', () => {
+        document.querySelectorAll('input[type="range"]').forEach(inp => { inp._touchingSlot = false; inp._savedValue = null; });
+    });
 
-        function applyBackground(color) {
-            config.bgColor = color;
-            bgWrap.style.background = color;
-            const toggleBg = document.getElementById('toggleBg');
-            if (color === "#ffffff") {
-                document.body.classList.remove("bg-black");
-                if (toggleBg) toggleBg.className = "btn-black";
-            } else {
-                document.body.classList.add("bg-black");
-                if (toggleBg) toggleBg.className = "btn-white";
-            }
-            requestAnimationFrame(() => {
-                document.querySelectorAll('input[type="range"]').forEach(inp => {
-                    inp._trackWidth = 0;
-                    updateSliderFill(inp);
+    function bindSlider(inpId, valId, cfgKey, formatFn) {
+        const inp = document.getElementById(inpId), valSpan = document.getElementById(valId); if (!inp || !valSpan) return;
+        
+        const onDown = (e) => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            if (!checkIsOnThumb(inp, clientX)) { inp._touchingSlot = true; inp._savedValue = inp.value; }
+            pauseBubbleAnim();
+        };
+        inp.addEventListener('pointerdown', onDown); inp.addEventListener('touchstart', onDown, { passive: true }); inp.addEventListener('mousedown', onDown);
+        
+        let rafPending = false;
+        inp.addEventListener("input", () => {
+            if (inp._touchingSlot && inp._savedValue !== null) { inp.value = inp._savedValue; updateSliderFill(inp); return; }
+            const val = Number(inp.value); config[cfgKey] = val; valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2); updateSliderFill(inp);
+            
+            if (!rafPending) {
+                rafPending = true; requestAnimationFrame(() => {
+                    rafPending = false;
+                    if (cfgKey === 'bubbleSec') restartBubbleAnim(); 
+                    else if (cfgKey === 'bubbleSize') updateBubbleSize(); 
+                    else if (cfgKey === 'musicVol') applyVolume(); 
+                    else if (cfgKey === 'bgAlpha' || cfgKey === 'shadowAlpha') updateCardStyle();
                 });
-            });
-        }
-
-        function updateSliderFill(slider) {
-            if (!slider) return;
-            const min = parseFloat(slider.min);
-            const max = parseFloat(slider.max);
-            const val = parseFloat(slider.value);
-            const percent = Math.max(0, Math.min(100, ((val - min) / (max - min)) * 100));
-
-            const thumbWidth = 22;
-            
-            let trackWidth = slider._trackWidth;
-            if (!trackWidth || trackWidth === 0) {
-                trackWidth = slider.offsetWidth;
-                if (trackWidth > 0) {
-                    slider._trackWidth = trackWidth;
-                }
             }
+        });
+        updateSliderFill(inp);
+    }
 
-            let visualPercent = percent;
-            if (trackWidth > 0) {
-                const fillWidth = thumbWidth + (trackWidth - thumbWidth) * (percent / 100);
-                visualPercent = (fillWidth / trackWidth) * 100;
+    function bindScaleSlider() {
+        const inpMin = document.getElementById("inpScaleMin"), inpMax = document.getElementById("inpScaleMax");
+        const valMin = document.getElementById("valScaleMin"), valMax = document.getElementById("valScaleMax");
+        if (!inpMin || !inpMax) return;
+
+        const updateScale = (isMin) => {
+            let min = Number(inpMin.value), max = Number(inpMax.value);
+            if (min >= max) {
+                if (isMin) { min = Number((max - 0.001).toFixed(3)); inpMin.value = min; }
+                else { max = Number((min + 0.001).toFixed(3)); inpMax.value = max; }
             }
+            config.scaleMin = min; config.scaleMax = max;
+            valMin.textContent = min.toFixed(1); valMax.textContent = max.toFixed(1);
+            updateSliderFill(inpMin); updateSliderFill(inpMax);
+        };
 
-            const trackEl = slider.closest('.slider-track');
-            if (trackEl) {
-                const fillEl = trackEl.querySelector('.slider-fill');
-                if (fillEl) {
-                    fillEl.style.width = visualPercent + '%';
-                }
-            }
-        }
-
-        function bindSlider(inpId, valId, cfgKey, formatFn) {
-            const inp = document.getElementById(inpId);
-            const valSpan = document.getElementById(valId);
-            if (!inp || !valSpan) return;
-            
-            const isOnThumb = (clientX) => {
-                const rect = inp.getBoundingClientRect();
-                const x = clientX - rect.left;
-                const min = parseFloat(inp.min);
-                const max = parseFloat(inp.max);
-                const val = parseFloat(inp.value);
-                const percent = (val - min) / (max - min);
-                const thumbWidth = 22;
-                const thumbLeft = (rect.width - thumbWidth) * percent;
-                return x >= thumbLeft - 10 && x <= thumbLeft + thumbWidth + 10;
-            };
-            
-            let touchingSlot = false;
-            let savedValue = null;
-            
-            const onPointerDown = (e) => {
+        [inpMin, inpMax].forEach((inp, index) => {
+            const onDown = (e) => {
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                if (!isOnThumb(clientX)) {
-                    touchingSlot = true;
-                    savedValue = inp.value;
-                }
+                if (!checkIsOnThumb(inp, clientX)) { inp._touchingSlot = true; inp._savedValue = inp.value; }
                 pauseBubbleAnim();
             };
-            
-            inp.addEventListener('pointerdown', onPointerDown);
-            inp.addEventListener('touchstart', onPointerDown, { passive: true });
-            inp.addEventListener('mousedown', onPointerDown);
-            
-            const clearTouch = () => {
-                touchingSlot = false;
-                savedValue = null;
-            };
-            document.addEventListener('pointerup', clearTouch);
-            document.addEventListener('pointercancel', clearTouch);
-            
-            let rafPending = false;
+            inp.addEventListener('pointerdown', onDown); inp.addEventListener('touchstart', onDown, { passive: true }); inp.addEventListener('mousedown', onDown);
             inp.addEventListener("input", () => {
-                if (touchingSlot && savedValue !== null) {
-                    inp.value = savedValue;
-                    updateSliderFill(inp);
-                    return;
-                }
-                
-                const val = Number(inp.value);
-                config[cfgKey] = val;
-                valSpan.textContent = formatFn ? formatFn(val) : val.toFixed(2);
-                updateSliderFill(inp);
-                
-                if (!rafPending) {
-                    rafPending = true;
-                    requestAnimationFrame(() => {
-                        rafPending = false;
-                        if (cfgKey === 'bubbleSec') restartBubbleAnim();
-                        else if (cfgKey === 'bubbleSize') updateBubbleSize();
-                        else if (cfgKey === 'musicVol') applyVolume();
-                        else updateCardStyle();
-                    });
-                }
+                if (inp._touchingSlot && inp._savedValue !== null) { inp.value = inp._savedValue; updateSliderFill(inp); return; }
+                updateScale(index === 0);
             });
-            
             updateSliderFill(inp);
-        }
+        });
+    }
+    bindScaleSlider();
 
-        function initSliders() {
-            bindSlider("inpBgAlpha", "valBgAlpha", "bgAlpha", v => v.toFixed(2));
-            bindSlider("inpShadow", "valShadow", "shadowAlpha", v => v.toFixed(2));
-            bindSlider("inpTrans", "valTrans", "transRange", v => v.toFixed(0));
-            bindSlider("inpBubbleSize", "valBubbleSize", "bubbleSize", v => v.toFixed(1));
-            bindSlider("inpBubbleTime", "valBubbleTime", "bubbleSec", v => v.toFixed(2));
-            bindSlider("inpPageTrans", "valPageTrans", "pageTransSec", v => v.toFixed(2));
-            bindSlider("inpMusicVol", "valMusicVol", "musicVol", v => v.toFixed(0));
+    ["inpBgAlpha:valBgAlpha:bgAlpha", "inpShadow:valShadow:shadowAlpha", "inpTrans:valTrans:transRange", "inpBubbleSize:valBubbleSize:bubbleSize", "inpBubbleTime:valBubbleTime:bubbleSec", "inpPageTrans:valPageTrans:pageTransSec", "inpMusicVol:valMusicVol:musicVol"].forEach(str => {
+        const [i, v, c] = str.split(':'); bindSlider(i, v, c, val => c === 'bgAlpha' || c === 'shadowAlpha' || c === 'pageTransSec' || c === 'bubbleSec' ? val.toFixed(2) : (c === 'bubbleSize' ? val.toFixed(1) : val.toFixed(0)));
+    });
 
-            const inpScaleMin = document.getElementById("inpScaleMin");
-            const inpScaleMax = document.getElementById("inpScaleMax");
-            const valScaleMin = document.getElementById("valScaleMin");
-            const valScaleMax = document.getElementById("valScaleMax");
+    function restartBubbleAnim() {
+        if (bubbleTimer) clearInterval(bubbleTimer);
+        document.documentElement.style.setProperty('--bubble-duration', config.bubbleSec + 's');
+        document.querySelectorAll(".bubble").forEach(bub => { bub.style.transform = `translate3d(${(Math.random() * config.transRange * 2 - config.transRange)}%,${(Math.random() * config.transRange * 2 - config.transRange)}%,0) scale(${config.scaleMin + Math.random() * (config.scaleMax - config.scaleMin)})`; });
+        bubbleTimer = setInterval(() => { document.querySelectorAll(".bubble").forEach(bub => { bub.style.transform = `translate3d(${(Math.random() * config.transRange * 2 - config.transRange)}%,${(Math.random() * config.transRange * 2 - config.transRange)}%,0) scale(${config.scaleMin + Math.random() * (config.scaleMax - config.scaleMin)})`; }); }, config.bubbleSec * 1000);
+    }
 
-            if (inpScaleMin && inpScaleMax && valScaleMin && valScaleMax) {
-                const bindScaleSlider = (inp, isMin) => {
-                    const isOnThumb = (clientX) => {
-                        const rect = inp.getBoundingClientRect();
-                        const x = clientX - rect.left;
-                        const min = parseFloat(inp.min);
-                        const max = parseFloat(inp.max);
-                        const val = parseFloat(inp.value);
-                        const percent = (val - min) / (max - min);
-                        const thumbWidth = 22;
-                        const thumbLeft = (rect.width - thumbWidth) * percent;
-                        return x >= thumbLeft - 10 && x <= thumbLeft + thumbWidth + 10;
-                    };
-                    
-                    let touchingSlot = false;
-                    let savedValue = null;
-                    
-                    const onPointerDown = (e) => {
-                        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                        if (!isOnThumb(clientX)) {
-                            touchingSlot = true;
-                            savedValue = inp.value;
-                        }
-                        pauseBubbleAnim();
-                    };
-                    
-                    inp.addEventListener('pointerdown', onPointerDown);
-                    inp.addEventListener('touchstart', onPointerDown, { passive: true });
-                    inp.addEventListener('mousedown', onPointerDown);
-                    
-                    document.addEventListener('pointerup', () => {
-                        touchingSlot = false;
-                        savedValue = null;
-                    });
-                    document.addEventListener('pointercancel', () => {
-                        touchingSlot = false;
-                        savedValue = null;
-                    });
-                    
-                    inp.addEventListener("input", () => {
-                        if (touchingSlot && savedValue !== null) {
-                            inp.value = savedValue;
-                            updateSliderFill(inp);
-                            return;
-                        }
-                        
-                        let min = Number(inpScaleMin.value);
-                        let max = Number(inpScaleMax.value);
-                        if (min >= max) {
-                            if (isMin) {
-                                min = Number((max - 0.001).toFixed(3));
-                                inp.value = min;
-                            } else {
-                                max = Number((min + 0.001).toFixed(3));
-                                inp.value = max;
-                            }
-                        }
-                        config.scaleMin = min;
-                        config.scaleMax = max;
-                        valScaleMin.textContent = min.toFixed(1);
-                        valScaleMax.textContent = max.toFixed(1);
-                        updateSliderFill(inpScaleMin);
-                        updateSliderFill(inpScaleMax);
-                    });
-                    
-                    updateSliderFill(inp);
-                };
-                
-                bindScaleSlider(inpScaleMin, true);
-                bindScaleSlider(inpScaleMax, false);
-            }
+    document.querySelectorAll(".bubble").forEach(bub => { bub.style.transition = 'none'; });
+    void document.body.offsetHeight;
+    document.querySelectorAll(".bubble").forEach(bub => { bub.style.transition = ''; });
+    updateCardStyle(); applyBackground("#ffffff"); applyVolume(); restartBubbleAnim();
+    
+    if (errors.length === 0) {
+        setTimeout(() => { alert('建议使用via浏览器打开，官网:https://viayoo.com其他浏览器可能会有显示问题'); setTimeout(() => alert('在任何界面点击左上角的箭头按钮可返回上一级'), 3000); }, 100);
+    }
 
-            document.querySelectorAll('[data-key]').forEach(span => bindEditEvent(span));
-
-            function bindEditEvent(span) {
-                span.addEventListener('click', function handler() {
-                    const key = this.dataset.key;
-                    const meta = paramsMeta[key];
-                    if (!meta) return;
-                    const oldVal = config[key];
-                    const input = document.createElement('input');
-                    input.type = 'number'; input.step = 'any'; input.min = meta.min; input.max = meta.max;
-                    input.value = oldVal;
-                    input.style.cssText = `width:60px;text-align:center;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.3);border-radius:6px;color:inherit;padding:2px 4px;font-size:14px;outline:none;`;
-                    this.replaceWith(input); input.focus(); input.select();
-                    const commit = () => {
-                        let newVal = parseFloat(input.value);
-                        if (isNaN(newVal)) newVal = oldVal;
-                        newVal = Math.max(meta.min, Math.min(meta.max, newVal));
-                        newVal = Number(newVal.toFixed(meta.fixed));
-                        config[key] = newVal;
-                        const inpId = 'inp' + key.charAt(0).toUpperCase() + key.slice(1);
-                        const inpEl = document.getElementById(inpId);
-                        if (inpEl) { inpEl.value = newVal; updateSliderFill(inpEl); }
-                        const newSpan = document.createElement('span');
-                        newSpan.id = this.id; newSpan.dataset.key = key;
-                        newSpan.textContent = newVal.toFixed(meta.fixed);
-                        bindEditEvent(newSpan);
-                        input.replaceWith(newSpan);
-                        if (key === 'scaleMin' && config.scaleMin >= config.scaleMax) {
-                            config.scaleMax = Number((config.scaleMin + 0.001).toFixed(3));
-                            const el = document.getElementById('inpScaleMax');
-                            if (el) { el.value = config.scaleMax; updateSliderFill(el); }
-                            const vEl = document.getElementById('valScaleMax');
-                            if (vEl) vEl.textContent = config.scaleMax.toFixed(paramsMeta.scaleMax.fixed);
-                        }
-                        if (key === 'scaleMax' && config.scaleMin >= config.scaleMax) {
-                            config.scaleMin = Number((config.scaleMax - 0.001).toFixed(3));
-                            const el = document.getElementById('inpScaleMin');
-                            if (el) { el.value = config.scaleMin; updateSliderFill(el); }
-                            const vEl = document.getElementById('valScaleMin');
-                            if (vEl) vEl.textContent = config.scaleMin.toFixed(paramsMeta.scaleMin.fixed);
-                        }
-                        if (key === 'bubbleSec') restartBubbleAnim();
-                        else if (key === 'bubbleSize') updateBubbleSize();
-                        else if (key === 'musicVol') applyVolume();
-                        else updateCardStyle();
-                    };
-                    input.addEventListener('blur', commit);
-                    input.addEventListener('keydown', e => {
-                        if (e.key === 'Enter') input.blur();
-                        if (e.key === 'Escape') { input.value = oldVal; input.blur(); }
-                    });
-                });
-            }
-        }
-    </script>
+    audio.play().catch(() => { document.addEventListener('click', () => audio.play().catch(()=>{}), { once: true }); });
+    document.addEventListener('pointerup', resumeBubbleAnim); document.addEventListener('pointercancel', resumeBubbleAnim);
+    window.addEventListener('resize', () => { document.querySelectorAll('input[type="range"]').forEach(inp => { inp._trackWidth = 0; updateSliderFill(inp); }); });
+});
+</script>
 </body>
 </html>
