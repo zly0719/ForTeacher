@@ -728,7 +728,7 @@ document.addEventListener('DOMContentLoaded', () => {
     updateCardStyle(); applyBackground("#ffffff"); applyVolume(); restartBubbleAnim();
     
     if (errors.length === 0) {
-        setTimeout(() => { alert('建议使用via浏览器打开，官网:https://viayoo.com其他浏览器可能会有显示问题'); setTimeout(() => alert('在任何界面点击左上角的箭头按钮可返回上一级'), 3000); }, 100);
+        setTimeout(() => { alert('建议使用via浏览器打开，官网:https://viayoo.com其他浏览器可能会有显示问题'); setTimeout(() => alert('在任何界面点击左上角的箭头按钮可返回上一级，我自己测的时候发现几个奇怪的问题，主页是四个按钮，如果数量对不上，请清除浏览器缓存，或者点击右上角感叹号，在弹出的界面点击恢复初始配置，此时浏览器会弹出几个弹窗，一直点确定，再点击应用配置'), 3000); }, 100);
     }
 
     audio.play().catch(() => { document.addEventListener('click', () => audio.play().catch(()=>{}), { once: true }); });
